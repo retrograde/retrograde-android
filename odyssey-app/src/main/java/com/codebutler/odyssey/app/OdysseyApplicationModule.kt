@@ -20,15 +20,20 @@
 package com.codebutler.odyssey.app
 
 import android.arch.persistence.room.Room
+import android.content.Context
 import com.codebutler.odyssey.lib.core.CoreManager
 import com.codebutler.odyssey.lib.library.GameLibrary
 import com.codebutler.odyssey.lib.library.db.OdysseyDatabase
+import com.codebutler.odyssey.lib.library.provider.GameLibraryProvider
 import com.codebutler.odyssey.lib.library.provider.GameLibraryProviderRegistry
 import com.codebutler.odyssey.lib.library.provider.local.LocalGameLibraryProvider
 import com.codebutler.odyssey.lib.ovgdb.OvgdbManager
+import com.codebutler.odyssey.provider.gdrive.GDriveModule
 import com.codebutler.odyssey.provider.webdav.WebDavLibraryProvider
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.IntoSet
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
 import retrofit2.Converter
@@ -41,8 +46,12 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipInputStream
 
-@Module
+@Module(includes = arrayOf(GDriveModule::class)) // FIXME: Duplicate instance with GDriveBrowseFragment.Component
 abstract class OdysseyApplicationModule {
+
+    @Binds
+    abstract fun context(app: OdysseyApplication): Context
+
     @Module
     companion object {
         @Provides
@@ -61,9 +70,19 @@ abstract class OdysseyApplicationModule {
                 .build()
 
         @Provides
+        @IntoSet
         @JvmStatic
-        fun gameLibraryProviderRegistry(app: OdysseyApplication)
-                = GameLibraryProviderRegistry(setOf(LocalGameLibraryProvider(app), WebDavLibraryProvider(app)))
+        fun localGameLibraryProvider(app: OdysseyApplication): GameLibraryProvider = LocalGameLibraryProvider(app)
+
+        @Provides
+        @IntoSet
+        @JvmStatic
+        fun webDavGameLibraryProvider(app: OdysseyApplication): GameLibraryProvider = WebDavLibraryProvider(app) // FIXME: Move to webdav subproject
+
+        @Provides
+        @JvmStatic
+        fun gameLibraryProviderRegistry(app: OdysseyApplication, providers: Set<@JvmSuppressWildcards GameLibraryProvider>)
+                = GameLibraryProviderRegistry(providers)
 
         @Provides
         @JvmStatic

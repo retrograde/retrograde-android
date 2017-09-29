@@ -29,6 +29,7 @@ dependencies {
 
     implementation project(":odyssey-common")
     implementation project(":odyssey-lib")
+    implementation project(":odyssey-provider-gdrive")
     implementation project(":odyssey-provider-webdav")
 
     implementation libs.archPaging
