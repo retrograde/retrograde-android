@@ -13,11 +13,7 @@ import com.codebutler.odyssey.app.feature.common.FpsCalculator
 import timber.log.Timber
 
 class GameGLSurfaceView(context: Context?, attrs: AttributeSet?) : GLSurfaceView(context, attrs) {
-    private val fpsCalculator: FpsCalculator = FpsCalculator()
     private val renderer: GLRenderer2d
-
-    private var surfaceHolder: SurfaceHolder? = null
-    private var lastBitmap: Bitmap? = null
 
     init {
         val holder = holder
@@ -34,13 +30,11 @@ class GameGLSurfaceView(context: Context?, attrs: AttributeSet?) : GLSurfaceView
         renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
     }
 
-    private var callback: ((Long) -> Unit)? = null
-
     fun setFpsCallback(callback: (Long) -> Unit) {
-        this.callback = callback
+        renderer.callback = callback
     }
 
     fun update(bitmap: Bitmap) {
-        lastBitmap = bitmap
+        renderer.setBitmap(bitmap)
     }
 }

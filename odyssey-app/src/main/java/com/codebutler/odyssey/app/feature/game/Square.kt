@@ -1,5 +1,6 @@
 package com.codebutler.odyssey.app.feature.game
 
+import android.graphics.Bitmap
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -7,19 +8,25 @@ import java.nio.ShortBuffer
 import android.opengl.GLES20
 
 
-
 class Square {
+    private val bytesPerFloat: Int = 4
     private val vertexBuffer: FloatBuffer
     private val drawListBuffer: ShortBuffer
+    private val uvBuffer: FloatBuffer
     private val vertexShaderCode =
             "attribute vec4 vPosition;" +
+                    "attribute vec2 a_TexCoordinate;" +
+                    "varying vec2 v_TexCoordinate;" +
                     "void main() {" +
+                    "  v_TexCoordinate = a_TexCoordinate;" +
                     "  gl_Position = vPosition;" +
                     "}"
     private val fragmentShaderCode =
             "precision mediump float;" +
+                    "uniform sampler2D u_Texture;" +
+                    "varying vec2 v_TexCoordinate;" +
                     "void main() {" +
-                    "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);" +
+                    "  gl_FragColor = texture2D(u_Texture, v_TexCoordinate);" +
                     "}"
     private val program: Int
 
@@ -29,12 +36,20 @@ class Square {
              1.0f, -1.0f, 0.0f, // bottom right
              1.0f,  1.0f, 0.0f) // top right
 
+    private val squareUvCoords = floatArrayOf(
+            0.0f, 0.0f, // top left
+            0.0f, 1.0f, // bottom left
+            1.0f, 1.0f, // bottom right
+            1.0f, 0.0f) // top right
+
     // number of coordinates per vertex in this array
     private val COORDS_PER_VERTEX = 3
     private val vertexCount: Int = squareCoords.size / COORDS_PER_VERTEX
     private val vertexStride: Int = COORDS_PER_VERTEX * 4 // 4 bytes per vertex
 
     private val drawOrder = shortArrayOf(0, 1, 2, 0, 2, 3) // order to draw vertices
+
+    public var bitmap: Bitmap? = null
 
     init {
         // initialize vertex byte buffer for shape coordinates
@@ -55,6 +70,10 @@ class Square {
         drawListBuffer.put(drawOrder)
         drawListBuffer.position(0)
 
+        uvBuffer = ByteBuffer.allocateDirect(squareUvCoords.size * bytesPerFloat)
+                .order(ByteOrder.nativeOrder()).asFloatBuffer()
+        uvBuffer.put(squareUvCoords).position(0)
+
         val vertexShader = GLRenderer2d.loadShader(GLES20.GL_VERTEX_SHADER,
                 vertexShaderCode)
         val fragmentShader = GLRenderer2d.loadShader(GLES20.GL_FRAGMENT_SHADER,
@@ -74,6 +93,9 @@ class Square {
     }
 
     fun draw() {
+        val b = bitmap ?: return
+        val textureLocation = GLRenderer2d.loadTexture(b)
+
         // Add program to OpenGL ES environment
         GLES20.glUseProgram(program)
 
@@ -88,6 +110,14 @@ class Square {
                 positionHandle, COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
                 vertexStride, vertexBuffer)
+
+        // Pass in the texture coordinate information
+        val textureHandle = GLES20.glGetAttribLocation(program, "a_TexCoordinate");
+        uvBuffer.position(0)
+        GLES20.glVertexAttribPointer(textureHandle, 2, GLES20.GL_FLOAT, false,
+                0, uvBuffer)
+
+        GLES20.glEnableVertexAttribArray(textureHandle);
 
         // Draw the square
         GLES20.glDrawElements(
