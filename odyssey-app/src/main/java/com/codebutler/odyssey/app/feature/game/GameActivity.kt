@@ -31,11 +31,13 @@ import android.support.v7.app.AppCompatActivity
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.view.View.VISIBLE
 import android.widget.ProgressBar
 import android.widget.TextView
 import com.codebutler.odyssey.R
 import com.codebutler.odyssey.app.OdysseyApplication
 import com.codebutler.odyssey.app.OdysseyApplicationComponent
+import com.codebutler.odyssey.app.feature.common.FpsCalculator
 import com.codebutler.odyssey.common.kotlin.bindView
 import com.codebutler.odyssey.common.kotlin.isAllZeros
 import com.codebutler.odyssey.lib.core.CoreManager
@@ -62,6 +64,7 @@ import javax.inject.Inject
 class GameActivity : AppCompatActivity() {
 
     companion object {
+        private const val USE_SURFACE = true
         private const val EXTRA_GAME_ID = "game_id"
 
         fun newIntent(context: Context, game: Game)
@@ -74,7 +77,8 @@ class GameActivity : AppCompatActivity() {
     @Inject lateinit var odysseyDatabase: OdysseyDatabase
     @Inject lateinit var gameLibrary: GameLibrary
 
-    private val imageView: FpsImageView by bindView(R.id.image)
+    private val gameView: GameSurfaceView by bindView(R.id.game_surface)
+    private val imageView: FpsImageView by bindView(R.id.image_view)
     private val progressBar: ProgressBar by bindView(R.id.progress)
     private val fpsView: TextView by bindView(R.id.fps)
 
@@ -116,7 +120,14 @@ class GameActivity : AppCompatActivity() {
                     finish()
                 })
 
-        imageView.setFpsCallback({fps: Long -> fpsView.text = "$fps" })
+        if (USE_SURFACE) {
+            gameView.visibility = VISIBLE
+            gameView.setFpsCallback({ fps: Long -> handler.post({fpsView.text = "$fps"}) })
+        } else {
+            imageView.visibility = VISIBLE
+            imageView.setFpsCallback({ fps: Long -> fpsView.text = "$fps" })
+        }
+
     }
 
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
@@ -176,12 +187,17 @@ class GameActivity : AppCompatActivity() {
         }
 
         retroDroid.videoCallback = { bitmap ->
-            handler.post {
-                val drawable = BitmapDrawable(resources, bitmap)
-                drawable.paint.isAntiAlias = false
-                drawable.paint.isDither = false
-                drawable.paint.isFilterBitmap = false
-                imageView.setImageDrawable(drawable)
+//            Timber.d("${System.currentTimeMillis()}")
+            if (USE_SURFACE) {
+                gameView.update(bitmap)
+            } else {
+                handler.post({
+                    val drawable = BitmapDrawable(resources, bitmap)
+                    drawable.paint.isAntiAlias = false
+                    drawable.paint.isDither = false
+                    drawable.paint.isFilterBitmap = false
+                    imageView.setImageDrawable(drawable)
+                })
             }
         }
 

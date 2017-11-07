@@ -36,7 +36,15 @@
         android:indeterminate="true" />
 
     <com.codebutler.odyssey.app.feature.game.FpsImageView
-        android:id="@+id/image"
+        android:visibility="gone"
+        android:id="@+id/image_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:ignore="ContentDescription" />
+
+    <com.codebutler.odyssey.app.feature.game.GameSurfaceView
+        android:visibility="gone"
+        android:id="@+id/game_surface"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:ignore="ContentDescription" />
