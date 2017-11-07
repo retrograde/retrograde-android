@@ -62,9 +62,14 @@ import java.io.File
 import javax.inject.Inject
 
 class GameActivity : AppCompatActivity() {
+    private enum class RenderMode {
+        IMAGE_VIEW,
+        SURFACE_VIEW,
+        GL_SURFACE_VIEW;
+    }
 
     companion object {
-        private const val USE_SURFACE = true
+        private val RENDER_MODE: RenderMode = RenderMode.GL_SURFACE_VIEW
         private const val EXTRA_GAME_ID = "game_id"
 
         fun newIntent(context: Context, game: Game)
@@ -78,6 +83,7 @@ class GameActivity : AppCompatActivity() {
     @Inject lateinit var gameLibrary: GameLibrary
 
     private val gameView: GameSurfaceView by bindView(R.id.game_surface)
+    private val gameGlView: GameGLSurfaceView by bindView(R.id.game_gl_surface)
     private val imageView: FpsImageView by bindView(R.id.image_view)
     private val progressBar: ProgressBar by bindView(R.id.progress)
     private val fpsView: TextView by bindView(R.id.fps)
@@ -120,12 +126,19 @@ class GameActivity : AppCompatActivity() {
                     finish()
                 })
 
-        if (USE_SURFACE) {
-            gameView.visibility = VISIBLE
-            gameView.setFpsCallback({ fps: Long -> handler.post({fpsView.text = "$fps"}) })
-        } else {
-            imageView.visibility = VISIBLE
-            imageView.setFpsCallback({ fps: Long -> fpsView.text = "$fps" })
+        when(RENDER_MODE) {
+            RenderMode.IMAGE_VIEW -> {
+                imageView.visibility = VISIBLE
+                imageView.setFpsCallback({ fps: Long -> fpsView.text = "$fps" })
+            }
+            RenderMode.SURFACE_VIEW -> {
+                gameView.visibility = VISIBLE
+                gameView.setFpsCallback({ fps: Long -> handler.post({fpsView.text = "$fps"}) })
+            }
+            RenderMode.GL_SURFACE_VIEW -> {
+                gameGlView.visibility = VISIBLE
+                gameGlView.setFpsCallback({ fps: Long -> handler.post({fpsView.text = "$fps"}) })
+            }
         }
 
     }
@@ -187,17 +200,22 @@ class GameActivity : AppCompatActivity() {
         }
 
         retroDroid.videoCallback = { bitmap ->
-//            Timber.d("${System.currentTimeMillis()}")
-            if (USE_SURFACE) {
-                gameView.update(bitmap)
-            } else {
-                handler.post({
-                    val drawable = BitmapDrawable(resources, bitmap)
-                    drawable.paint.isAntiAlias = false
-                    drawable.paint.isDither = false
-                    drawable.paint.isFilterBitmap = false
-                    imageView.setImageDrawable(drawable)
-                })
+            when(RENDER_MODE) {
+                RenderMode.IMAGE_VIEW -> {
+                    handler.post({
+                        val drawable = BitmapDrawable(resources, bitmap)
+                        drawable.paint.isAntiAlias = false
+                        drawable.paint.isDither = false
+                        drawable.paint.isFilterBitmap = false
+                        imageView.setImageDrawable(drawable)
+                    })
+                }
+                RenderMode.SURFACE_VIEW -> {
+                    gameView.update(bitmap)
+                }
+                RenderMode.GL_SURFACE_VIEW -> {
+                    gameGlView.update(bitmap)
+                }
             }
         }
 

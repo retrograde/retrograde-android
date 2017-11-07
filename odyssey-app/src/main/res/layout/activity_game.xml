@@ -49,6 +49,13 @@
         android:layout_height="match_parent"
         tools:ignore="ContentDescription" />
 
+    <com.codebutler.odyssey.app.feature.game.GameGLSurfaceView
+        android:visibility="gone"
+        android:id="@+id/game_gl_surface"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:ignore="ContentDescription" />
+
     <TextView
         android:id="@+id/fps"
         android:layout_height="wrap_content"
