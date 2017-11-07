@@ -31,8 +31,8 @@ import android.support.v7.app.AppCompatActivity
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
-import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.TextView
 import com.codebutler.odyssey.R
 import com.codebutler.odyssey.app.OdysseyApplication
 import com.codebutler.odyssey.app.OdysseyApplicationComponent
@@ -74,8 +74,9 @@ class GameActivity : AppCompatActivity() {
     @Inject lateinit var odysseyDatabase: OdysseyDatabase
     @Inject lateinit var gameLibrary: GameLibrary
 
-    private val imageView: ImageView by bindView(R.id.image)
+    private val imageView: FpsImageView by bindView(R.id.image)
     private val progressBar: ProgressBar by bindView(R.id.progress)
+    private val fpsView: TextView by bindView(R.id.fps)
 
     private val handler = Handler()
 
@@ -114,6 +115,8 @@ class GameActivity : AppCompatActivity() {
                     Timber.e(error, "Failed to load game")
                     finish()
                 })
+
+        imageView.setFpsCallback({fps: Long -> fpsView.text = "$fps" })
     }
 
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {

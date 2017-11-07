@@ -35,9 +35,18 @@
         android:layout_gravity="center"
         android:indeterminate="true" />
 
-    <ImageView
+    <com.codebutler.odyssey.app.feature.game.FpsImageView
         android:id="@+id/image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/fps"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:textColor="@android:color/white"
+        style="@style/Fps">
+
+    </TextView>
 </FrameLayout>
