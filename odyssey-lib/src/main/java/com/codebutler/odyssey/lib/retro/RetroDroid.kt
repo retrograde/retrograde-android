@@ -26,6 +26,7 @@ import android.graphics.Bitmap
 import android.os.Handler
 import android.view.KeyEvent
 import android.view.MotionEvent
+import com.codebutler.odyssey.common.BitmapCache
 import com.codebutler.odyssey.common.BufferCache
 import com.codebutler.odyssey.common.kotlin.containsAny
 import com.sun.jna.Native
@@ -47,6 +48,7 @@ class RetroDroid(private val context: Context, coreFile: File) : DefaultLifecycl
     private val retro: Retro
     private val variables: MutableMap<String, String> = mutableMapOf()
     private val videoBufferCache = BufferCache()
+    private val videoBitmapCache = BitmapCache()
 
     private var region: Retro.Region? = null
     private var systemAVInfo: Retro.SystemAVInfo? = null
@@ -107,7 +109,7 @@ class RetroDroid(private val context: Context, coreFile: File) : DefaultLifecycl
                         widthAsBytes      // LENGTH
                 )
             }
-            val bitmap = Bitmap.createBitmap(width, height, videoBitmapConfig)
+            val bitmap = videoBitmapCache.getBitmap(width, height, videoBitmapConfig)
             bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(newBuffer))
             videoCallback?.invoke(bitmap)
         }
