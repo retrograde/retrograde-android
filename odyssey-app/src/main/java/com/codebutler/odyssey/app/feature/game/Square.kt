@@ -1,11 +1,33 @@
 package com.codebutler.odyssey.app.feature.game
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.opengl.GLES20
+import android.opengl.GLES20.GL_FLOAT
+import android.opengl.GLES20.GL_NEAREST
+import android.opengl.GLES20.GL_TEXTURE_2D
+import android.opengl.GLES20.GL_TEXTURE_MAG_FILTER
+import android.opengl.GLES20.GL_TEXTURE_MIN_FILTER
+import android.opengl.GLES20.GL_TRIANGLES
+import android.opengl.GLES20.GL_UNSIGNED_SHORT
+import android.opengl.GLES20.glActiveTexture
+import android.opengl.GLES20.glBindTexture
+import android.opengl.GLES20.glDisableVertexAttribArray
+import android.opengl.GLES20.glDrawElements
+import android.opengl.GLES20.glEnableVertexAttribArray
+import android.opengl.GLES20.glGenTextures
+import android.opengl.GLES20.glGetAttribLocation
+import android.opengl.GLES20.glGetUniformLocation
+import android.opengl.GLES20.glTexParameteri
+import android.opengl.GLES20.glUniform1i
+import android.opengl.GLES20.glUseProgram
+import android.opengl.GLES20.glVertexAttribPointer
+import android.opengl.GLUtils
+import org.intellij.lang.annotations.Language
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
-import android.opengl.GLES20
 
 
 class Square {
@@ -13,21 +35,26 @@ class Square {
     private val vertexBuffer: FloatBuffer
     private val drawListBuffer: ShortBuffer
     private val uvBuffer: FloatBuffer
-    private val vertexShaderCode =
-            "attribute vec4 vPosition;" +
-                    "attribute vec2 a_TexCoordinate;" +
-                    "varying vec2 v_TexCoordinate;" +
-                    "void main() {" +
-                    "  v_TexCoordinate = a_TexCoordinate;" +
-                    "  gl_Position = vPosition;" +
-                    "}"
-    private val fragmentShaderCode =
-            "precision mediump float;" +
-                    "uniform sampler2D u_Texture;" +
-                    "varying vec2 v_TexCoordinate;" +
-                    "void main() {" +
-                    "  gl_FragColor = texture2D(u_Texture, v_TexCoordinate);" +
-                    "}"
+
+    @Language("glsl")
+    private val vertexShaderCode = """
+      attribute vec4 vPosition;
+      attribute vec2 a_TexCoordinate;
+      varying vec2 v_TexCoordinate;
+      void main() {
+        v_TexCoordinate = a_TexCoordinate;
+        gl_Position = vPosition;
+      }
+      """.trimIndent()
+    @Language("glsl")
+    private val fragmentShaderCode = """
+      precision mediump float;
+      uniform sampler2D u_Texture;
+      varying vec2 v_TexCoordinate;
+      void main() {
+        gl_FragColor = texture2D(u_Texture, v_TexCoordinate);
+      }
+      """.trimIndent()
     private val program: Int
 
     private val squareCoords = floatArrayOf(
@@ -49,7 +76,10 @@ class Square {
 
     private val drawOrder = shortArrayOf(0, 1, 2, 0, 2, 3) // order to draw vertices
 
-    public var bitmap: Bitmap? = null
+    var bitmap: Bitmap? = null
+
+    private var textureOffset = -1
+    private val texturePool = intArrayOf(-1, -1, -1)
 
     init {
         // initialize vertex byte buffer for shape coordinates
@@ -94,37 +124,74 @@ class Square {
 
     fun draw() {
         val b = bitmap ?: return
-        val textureLocation = GLRenderer2d.loadTexture(b)
 
         // Add program to OpenGL ES environment
-        GLES20.glUseProgram(program)
+        glUseProgram(program)
+
+        // bind the texture
+        val textureLocation = bindTexture(b)
+        glActiveTexture(0)
+        glBindTexture(GL_TEXTURE_2D, textureLocation)
+        glUniform1i(glGetUniformLocation(program, "u_Texture"), 0)
 
         // get handle to vertex shader's vPosition member
-        val positionHandle = GLES20.glGetAttribLocation(program, "vPosition")
+        val positionHandle = glGetAttribLocation(program, "vPosition")
 
         // Enable a handle to the triangle vertices
-        GLES20.glEnableVertexAttribArray(positionHandle)
+        glEnableVertexAttribArray(positionHandle)
 
         // Prepare the triangle coordinate data
-        GLES20.glVertexAttribPointer(
+        glVertexAttribPointer(
                 positionHandle, COORDS_PER_VERTEX,
-                GLES20.GL_FLOAT, false,
+                GL_FLOAT, false,
                 vertexStride, vertexBuffer)
 
         // Pass in the texture coordinate information
-        val textureHandle = GLES20.glGetAttribLocation(program, "a_TexCoordinate");
+        val textureCoordHandle = glGetAttribLocation(program, "a_TexCoordinate");
         uvBuffer.position(0)
-        GLES20.glVertexAttribPointer(textureHandle, 2, GLES20.GL_FLOAT, false,
+        glVertexAttribPointer(textureCoordHandle, 2, GL_FLOAT, false,
                 0, uvBuffer)
 
-        GLES20.glEnableVertexAttribArray(textureHandle);
+        glEnableVertexAttribArray(textureCoordHandle);
 
         // Draw the square
-        GLES20.glDrawElements(
-                GLES20.GL_TRIANGLES, drawOrder.size,
-                GLES20.GL_UNSIGNED_SHORT, drawListBuffer)
+        glDrawElements(
+                GL_TRIANGLES, drawOrder.size,
+                GL_UNSIGNED_SHORT, drawListBuffer)
 
         // Disable vertex array
-        GLES20.glDisableVertexAttribArray(positionHandle)
+        glDisableVertexAttribArray(positionHandle)
+    }
+
+    private fun bindTexture(bitmap: Bitmap): Int {
+        textureOffset = (textureOffset + 1) % texturePool.size
+        if (texturePool[textureOffset] == -1) {
+            glGenTextures(1, texturePool, textureOffset)
+        }
+
+        if (texturePool[textureOffset] != 0) {
+            val options = BitmapFactory.Options()
+            options.inScaled = false   // No pre-scaling
+
+            // Bind to the texture in OpenGL
+            glBindTexture(GL_TEXTURE_2D, texturePool[textureOffset])
+
+            // Set filtering
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+
+            // Load the bitmap into the bound texture.
+            GLUtils.texImage2D(GL_TEXTURE_2D, 0, bitmap, 0)
+
+            // TODO should do this later?
+//                Recycle the bitmap, since its data has been loaded into OpenGL.
+//                bitmap.recycle()
+        }
+
+        if (texturePool[textureOffset] == 0) {
+            throw RuntimeException("Error loading texture.")
+        }
+
+        return texturePool[textureOffset]
     }
 }
