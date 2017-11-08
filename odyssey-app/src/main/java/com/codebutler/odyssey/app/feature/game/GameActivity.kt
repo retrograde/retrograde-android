@@ -37,7 +37,6 @@ import android.widget.TextView
 import com.codebutler.odyssey.R
 import com.codebutler.odyssey.app.OdysseyApplication
 import com.codebutler.odyssey.app.OdysseyApplicationComponent
-import com.codebutler.odyssey.app.feature.common.FpsCalculator
 import com.codebutler.odyssey.common.kotlin.bindView
 import com.codebutler.odyssey.common.kotlin.isAllZeros
 import com.codebutler.odyssey.lib.core.CoreManager
@@ -242,7 +241,6 @@ class GameActivity : AppCompatActivity() {
         }
 
         retroDroid.loadGame(data.gameFile.absolutePath, data.saveData)
-        retroDroid.start()
 
         this.game = data.game
         this.retroDroid = retroDroid

@@ -24,6 +24,7 @@ import android.arch.lifecycle.LifecycleOwner
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Handler
+import android.view.Choreographer
 import android.view.KeyEvent
 import android.view.MotionEvent
 import com.codebutler.odyssey.common.BitmapCache
@@ -33,14 +34,13 @@ import com.sun.jna.Native
 import timber.log.Timber
 import java.io.File
 import java.nio.ByteBuffer
-import java.util.Timer
-import kotlin.concurrent.fixedRateTimer
 import kotlin.experimental.and
 
 /**
  * Native Android frontend for LibRetro!
  */
-class RetroDroid(private val context: Context, coreFile: File) : DefaultLifecycleObserver {
+class RetroDroid(private val context: Context, coreFile: File) : DefaultLifecycleObserver,
+        Choreographer.FrameCallback {
 
     private val audioSampleBufferCache = BufferCache()
     private val handler = Handler()
@@ -50,10 +50,10 @@ class RetroDroid(private val context: Context, coreFile: File) : DefaultLifecycl
     private val videoBufferCache = BufferCache()
     private val videoBitmapCache = BitmapCache()
 
+    private var gameLoaded: Boolean = false
     private var region: Retro.Region? = null
     private var systemAVInfo: Retro.SystemAVInfo? = null
     private var systemInfo: Retro.SystemInfo? = null
-    private var timer: Timer? = null
     private var videoBitmapConfig: Bitmap.Config = Bitmap.Config.ARGB_8888
     private var videoBytesPerPixel: Int = 0
 
@@ -163,29 +163,31 @@ class RetroDroid(private val context: Context, coreFile: File) : DefaultLifecycl
         if (saveData != null) {
             retro.setMemoryData(Retro.MemoryId.SAVE_RAM, saveData)
         }
-    }
 
-    fun start() {
-        val avInfo = systemAVInfo
-        if (this.timer != null || avInfo == null) {
-            return
-        }
-        this.timer = fixedRateTimer(period = 1000L / avInfo.timing.fps.toLong()) {
-            retro.run()
-        }
+        gameLoaded = true
     }
 
     override fun onResume(owner: LifecycleOwner) {
-        start()
+        Choreographer.getInstance().postFrameCallback(this)
     }
 
     override fun onPause(owner: LifecycleOwner) {
-        stop()
+        Choreographer.getInstance().removeFrameCallback(this)
     }
 
     override fun onDestroy(owner: LifecycleOwner) {
+        Choreographer.getInstance().removeFrameCallback(this)
         unloadGame()
         deinit()
+    }
+
+    override fun doFrame(frameTimeNanos: Long) {
+        if (!gameLoaded) {
+            return
+        }
+
+        retro.run()
+        Choreographer.getInstance().postFrameCallback(this)
     }
 
     fun onKeyEvent(event: KeyEvent) {
@@ -229,14 +231,10 @@ class RetroDroid(private val context: Context, coreFile: File) : DefaultLifecycl
         }
     }
 
-    private fun stop() {
-        timer?.cancel()
-        timer = null
-    }
-
     private fun unloadGame() {
         val saveRam = retro.getMemoryData(Retro.MemoryId.SAVE_RAM)
         retro.unloadGame()
+        gameLoaded = false
         gameUnloadedCallback?.invoke(saveRam)
     }
 
@@ -252,7 +250,8 @@ class RetroDroid(private val context: Context, coreFile: File) : DefaultLifecycl
         }
 
         when (Retro.Device.fromValue(device)) {
-            Retro.Device.NONE -> { }
+            Retro.Device.NONE -> {
+            }
             Retro.Device.JOYPAD -> {
                 return when (Retro.DeviceId.fromValue(id)) {
                     Retro.DeviceId.JOYPAD_A -> pressedKeys.containsAny(
