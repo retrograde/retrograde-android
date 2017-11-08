@@ -25,7 +25,8 @@ class GLRenderer2d : GLSurfaceView.Renderer {
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
-        GLES20.glViewport(0, 0, width, height);
+        GLES20.glViewport(0, 0, width, height)
+        square?.setGlBounds(width, height)
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {

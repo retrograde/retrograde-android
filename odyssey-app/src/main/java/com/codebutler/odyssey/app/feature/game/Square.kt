@@ -20,9 +20,11 @@ import android.opengl.GLES20.glGetAttribLocation
 import android.opengl.GLES20.glGetUniformLocation
 import android.opengl.GLES20.glTexParameteri
 import android.opengl.GLES20.glUniform1i
+import android.opengl.GLES20.glUniformMatrix4fv
 import android.opengl.GLES20.glUseProgram
 import android.opengl.GLES20.glVertexAttribPointer
 import android.opengl.GLUtils
+import android.opengl.Matrix
 import org.intellij.lang.annotations.Language
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -35,15 +37,17 @@ class Square {
     private val vertexBuffer: FloatBuffer
     private val drawListBuffer: ShortBuffer
     private val uvBuffer: FloatBuffer
+    private val transform = FloatArray(16)
 
     @Language("glsl")
     private val vertexShaderCode = """
       attribute vec4 vPosition;
+      uniform highp mat4 u_Transform;
       attribute vec2 a_TexCoordinate;
       varying vec2 v_TexCoordinate;
       void main() {
         v_TexCoordinate = a_TexCoordinate;
-        gl_Position = vPosition;
+        gl_Position = u_Transform * vPosition;
       }
       """.trimIndent()
     @Language("glsl")
@@ -80,6 +84,11 @@ class Square {
 
     private var textureOffset = -1
     private val texturePool = intArrayOf(-1, -1, -1)
+
+    private var surfaceWidth: Int = 0
+    private var surfaceHeight: Int = 0
+    private var bitmapWidth: Int = 0
+    private var bitmapHeight: Int = 0
 
     init {
         // initialize vertex byte buffer for shape coordinates
@@ -122,8 +131,45 @@ class Square {
         GLES20.glLinkProgram(program)
     }
 
+    fun setGlBounds(width: Int, height: Int) {
+        if (width == surfaceWidth && height == surfaceHeight) return
+        surfaceWidth = width
+        surfaceHeight = height
+        updateTransform()
+    }
+
+    fun setBitmapBounds(width: Int, height: Int) {
+        if (width == bitmapWidth && height == bitmapHeight) return
+        bitmapWidth = width
+        bitmapHeight = height
+        updateTransform()
+    }
+
+    private fun updateTransform() {
+        if (bitmapWidth == 0 || bitmapHeight == 0 || surfaceWidth == 0 || surfaceHeight == 0) return
+
+        val surfaceAspect = surfaceWidth.toFloat() / surfaceHeight.toFloat()
+        val bitmapAspect = bitmapWidth.toFloat() / bitmapHeight.toFloat()
+
+        if (surfaceAspect > bitmapAspect) {
+            // image is taller
+            Matrix.orthoM(transform, 0,
+                -surfaceAspect / bitmapAspect, surfaceAspect / bitmapAspect,
+                -1.0f, 1.0f,
+                -1.0f, 1.0f)
+        } else {
+            // image is wider
+            Matrix.orthoM(transform, 0,
+                -1.0f, 1.0f,
+                -bitmapAspect / surfaceAspect, bitmapAspect / surfaceAspect,
+                -1.0f, 1.0f)
+        }
+    }
+
     fun draw() {
         val b = bitmap ?: return
+
+        setBitmapBounds(b.width, b.height)
 
         // Add program to OpenGL ES environment
         glUseProgram(program)
@@ -133,6 +179,10 @@ class Square {
         glActiveTexture(0)
         glBindTexture(GL_TEXTURE_2D, textureLocation)
         glUniform1i(glGetUniformLocation(program, "u_Texture"), 0)
+
+        // update the transform
+        val transformLocation = glGetUniformLocation(program, "u_Transform")
+        glUniformMatrix4fv(transformLocation, 1, false, transform, 0)
 
         // get handle to vertex shader's vPosition member
         val positionHandle = glGetAttribLocation(program, "vPosition")
