@@ -35,22 +35,7 @@
         android:layout_gravity="center"
         android:indeterminate="true" />
 
-    <com.codebutler.odyssey.app.feature.game.FpsImageView
-        android:visibility="gone"
-        android:id="@+id/image_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:ignore="ContentDescription" />
-
-    <com.codebutler.odyssey.app.feature.game.GameSurfaceView
-        android:visibility="gone"
-        android:id="@+id/game_surface"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:ignore="ContentDescription" />
-
-    <com.codebutler.odyssey.app.feature.game.GameGLSurfaceView
-        android:visibility="gone"
+    <com.codebutler.odyssey.app.feature.game.GameGlSurfaceView
         android:id="@+id/game_gl_surface"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

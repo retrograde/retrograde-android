@@ -250,8 +250,7 @@ class RetroDroid(private val context: Context, coreFile: File) : DefaultLifecycl
         }
 
         when (Retro.Device.fromValue(device)) {
-            Retro.Device.NONE -> {
-            }
+            Retro.Device.NONE -> { }
             Retro.Device.JOYPAD -> {
                 return when (Retro.DeviceId.fromValue(id)) {
                     Retro.DeviceId.JOYPAD_A -> pressedKeys.containsAny(

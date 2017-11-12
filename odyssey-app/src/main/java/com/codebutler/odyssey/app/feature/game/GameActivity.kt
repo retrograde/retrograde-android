@@ -21,7 +21,6 @@ package com.codebutler.odyssey.app.feature.game
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
@@ -31,7 +30,6 @@ import android.support.v7.app.AppCompatActivity
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
-import android.view.View.VISIBLE
 import android.widget.ProgressBar
 import android.widget.TextView
 import com.codebutler.odyssey.R
@@ -61,14 +59,7 @@ import java.io.File
 import javax.inject.Inject
 
 class GameActivity : AppCompatActivity() {
-    private enum class RenderMode {
-        IMAGE_VIEW,
-        SURFACE_VIEW,
-        GL_SURFACE_VIEW;
-    }
-
     companion object {
-        private val RENDER_MODE: RenderMode = RenderMode.GL_SURFACE_VIEW
         private const val EXTRA_GAME_ID = "game_id"
 
         fun newIntent(context: Context, game: Game)
@@ -81,11 +72,9 @@ class GameActivity : AppCompatActivity() {
     @Inject lateinit var odysseyDatabase: OdysseyDatabase
     @Inject lateinit var gameLibrary: GameLibrary
 
-    private val gameView: GameSurfaceView by bindView(R.id.game_surface)
-    private val gameGlView: GameGLSurfaceView by bindView(R.id.game_gl_surface)
-    private val imageView: FpsImageView by bindView(R.id.image_view)
-    private val progressBar: ProgressBar by bindView(R.id.progress)
+    private val gameView: GameGlSurfaceView by bindView(R.id.game_gl_surface)
     private val fpsView: TextView by bindView(R.id.fps)
+    private val progressBar: ProgressBar by bindView(R.id.progress)
 
     private val handler = Handler()
 
@@ -125,21 +114,7 @@ class GameActivity : AppCompatActivity() {
                     finish()
                 })
 
-        when(RENDER_MODE) {
-            RenderMode.IMAGE_VIEW -> {
-                imageView.visibility = VISIBLE
-                imageView.setFpsCallback({ fps: Long -> fpsView.text = "$fps" })
-            }
-            RenderMode.SURFACE_VIEW -> {
-                gameView.visibility = VISIBLE
-                gameView.setFpsCallback({ fps: Long -> handler.post({fpsView.text = "$fps"}) })
-            }
-            RenderMode.GL_SURFACE_VIEW -> {
-                gameGlView.visibility = VISIBLE
-                gameGlView.setFpsCallback({ fps: Long -> handler.post({fpsView.text = "$fps"}) })
-            }
-        }
-
+        gameView.setFpsCallback({ fps: Long -> handler.post({ fpsView.text = "$fps" }) })
     }
 
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
@@ -199,23 +174,7 @@ class GameActivity : AppCompatActivity() {
         }
 
         retroDroid.videoCallback = { bitmap ->
-            when(RENDER_MODE) {
-                RenderMode.IMAGE_VIEW -> {
-                    handler.post({
-                        val drawable = BitmapDrawable(resources, bitmap)
-                        drawable.paint.isAntiAlias = false
-                        drawable.paint.isDither = false
-                        drawable.paint.isFilterBitmap = false
-                        imageView.setImageDrawable(drawable)
-                    })
-                }
-                RenderMode.SURFACE_VIEW -> {
-                    gameView.update(bitmap)
-                }
-                RenderMode.GL_SURFACE_VIEW -> {
-                    gameGlView.update(bitmap)
-                }
-            }
+            gameView.update(bitmap)
         }
 
         retroDroid.audioCallback = { buffer ->

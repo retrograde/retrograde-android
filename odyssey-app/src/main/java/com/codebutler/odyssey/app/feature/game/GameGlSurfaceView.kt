@@ -5,8 +5,8 @@ import android.graphics.Bitmap
 import android.opengl.GLSurfaceView
 import android.util.AttributeSet
 
-class GameGLSurfaceView(context: Context?, attrs: AttributeSet?) : GLSurfaceView(context, attrs) {
-    private val renderer: GLRenderer2d
+class GameGlSurfaceView(context: Context?, attrs: AttributeSet?) : GLSurfaceView(context, attrs) {
+    private val renderer: GlRenderer2d
 
     init {
         val holder = holder
@@ -16,7 +16,7 @@ class GameGLSurfaceView(context: Context?, attrs: AttributeSet?) : GLSurfaceView
         setEGLContextClientVersion(2)
 
         // Set the Renderer for drawing on the GLSurfaceView
-        renderer = GLRenderer2d()
+        renderer = GlRenderer2d()
         setRenderer(renderer)
 
         // Render the view only when there is a change in the drawing data

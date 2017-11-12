@@ -8,10 +8,11 @@ import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
 
-class GLRenderer2d : GLSurfaceView.Renderer {
-    val fpsCalculator: FpsCalculator = FpsCalculator()
+class GlRenderer2d : GLSurfaceView.Renderer {
     private var square: Square? = null
-    public var callback: ((Long) -> Unit)? = null
+
+    val fpsCalculator: FpsCalculator = FpsCalculator()
+    var callback: ((Long) -> Unit)? = null
 
     fun setBitmap(bitmap: Bitmap) {
         square?.bitmap = bitmap

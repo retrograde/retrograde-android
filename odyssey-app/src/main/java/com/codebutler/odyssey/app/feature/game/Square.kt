@@ -113,9 +113,9 @@ class Square {
                 .order(ByteOrder.nativeOrder()).asFloatBuffer()
         uvBuffer.put(squareUvCoords).position(0)
 
-        val vertexShader = GLRenderer2d.loadShader(GLES20.GL_VERTEX_SHADER,
+        val vertexShader = GlRenderer2d.loadShader(GLES20.GL_VERTEX_SHADER,
                 vertexShaderCode)
-        val fragmentShader = GLRenderer2d.loadShader(GLES20.GL_FRAGMENT_SHADER,
+        val fragmentShader = GlRenderer2d.loadShader(GLES20.GL_FRAGMENT_SHADER,
                 fragmentShaderCode)
 
         // create empty OpenGL ES Program
@@ -233,9 +233,9 @@ class Square {
             // Load the bitmap into the bound texture.
             GLUtils.texImage2D(GL_TEXTURE_2D, 0, bitmap, 0)
 
-            // TODO should do this later?
-//                Recycle the bitmap, since its data has been loaded into OpenGL.
-//                bitmap.recycle()
+            // TODO do we need to recycle bitmaps?
+            // Recycle the bitmap, since its data has been loaded into OpenGL.
+            // bitmap.recycle()
         }
 
         if (texturePool[textureOffset] == 0) {
