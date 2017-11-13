@@ -7,7 +7,6 @@ import com.codebutler.odyssey.app.feature.common.FpsCalculator
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-
 class GlRenderer2d : GLSurfaceView.Renderer {
     private var square: Square? = null
 

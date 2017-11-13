@@ -3,26 +3,7 @@ package com.codebutler.odyssey.app.feature.game
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.opengl.GLES20
-import android.opengl.GLES20.GL_FLOAT
-import android.opengl.GLES20.GL_NEAREST
-import android.opengl.GLES20.GL_TEXTURE_2D
-import android.opengl.GLES20.GL_TEXTURE_MAG_FILTER
-import android.opengl.GLES20.GL_TEXTURE_MIN_FILTER
-import android.opengl.GLES20.GL_TRIANGLES
-import android.opengl.GLES20.GL_UNSIGNED_SHORT
-import android.opengl.GLES20.glActiveTexture
-import android.opengl.GLES20.glBindTexture
-import android.opengl.GLES20.glDisableVertexAttribArray
-import android.opengl.GLES20.glDrawElements
-import android.opengl.GLES20.glEnableVertexAttribArray
-import android.opengl.GLES20.glGenTextures
-import android.opengl.GLES20.glGetAttribLocation
-import android.opengl.GLES20.glGetUniformLocation
-import android.opengl.GLES20.glTexParameteri
-import android.opengl.GLES20.glUniform1i
-import android.opengl.GLES20.glUniformMatrix4fv
-import android.opengl.GLES20.glUseProgram
-import android.opengl.GLES20.glVertexAttribPointer
+import android.opengl.GLES20.*
 import android.opengl.GLUtils
 import android.opengl.Matrix
 import org.intellij.lang.annotations.Language
@@ -62,10 +43,10 @@ class Square {
     private val program: Int
 
     private val squareCoords = floatArrayOf(
-            -1.0f,  1.0f, 0.0f, // top left
+            -1.0f, 1.0f, 0.0f, // top left
             -1.0f, -1.0f, 0.0f, // bottom left
-             1.0f, -1.0f, 0.0f, // bottom right
-             1.0f,  1.0f, 0.0f) // top right
+            1.0f, -1.0f, 0.0f, // bottom right
+            1.0f, 1.0f, 0.0f) // top right
 
     private val squareUvCoords = floatArrayOf(
             0.0f, 0.0f, // top left
@@ -154,15 +135,15 @@ class Square {
         if (surfaceAspect > bitmapAspect) {
             // image is taller
             Matrix.orthoM(transform, 0,
-                -surfaceAspect / bitmapAspect, surfaceAspect / bitmapAspect,
-                -1.0f, 1.0f,
-                -1.0f, 1.0f)
+                    -surfaceAspect / bitmapAspect, surfaceAspect / bitmapAspect,
+                    -1.0f, 1.0f,
+                    -1.0f, 1.0f)
         } else {
             // image is wider
             Matrix.orthoM(transform, 0,
-                -1.0f, 1.0f,
-                -bitmapAspect / surfaceAspect, bitmapAspect / surfaceAspect,
-                -1.0f, 1.0f)
+                    -1.0f, 1.0f,
+                    -bitmapAspect / surfaceAspect, bitmapAspect / surfaceAspect,
+                    -1.0f, 1.0f)
         }
     }
 
@@ -197,12 +178,12 @@ class Square {
                 vertexStride, vertexBuffer)
 
         // Pass in the texture coordinate information
-        val textureCoordHandle = glGetAttribLocation(program, "a_TexCoordinate");
+        val textureCoordHandle = glGetAttribLocation(program, "a_TexCoordinate")
         uvBuffer.position(0)
         glVertexAttribPointer(textureCoordHandle, 2, GL_FLOAT, false,
                 0, uvBuffer)
 
-        glEnableVertexAttribArray(textureCoordHandle);
+        glEnableVertexAttribArray(textureCoordHandle)
 
         // Draw the square
         glDrawElements(
