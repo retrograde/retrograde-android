@@ -24,9 +24,10 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".app.feature.game.GameActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".app.feature.game.GameActivity">
+    android:id="@+id/game_layout">
 
     <ProgressBar
         android:id="@+id/progress"
@@ -35,9 +36,10 @@
         android:layout_gravity="center"
         android:indeterminate="true" />
 
-    <ImageView
-        android:id="@+id/image"
+    <com.codebutler.odyssey.app.feature.game.GameGlSurfaceView
+        android:id="@+id/game_gl_surface"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:ignore="ContentDescription" />
+
 </FrameLayout>

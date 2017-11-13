@@ -21,7 +21,7 @@ package com.codebutler.odyssey.app.feature.game
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
+import android.graphics.Color
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
@@ -31,8 +31,10 @@ import android.support.v7.app.AppCompatActivity
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
-import android.widget.ImageView
+import android.widget.FrameLayout
 import android.widget.ProgressBar
+import android.widget.TextView
+import com.codebutler.odyssey.BuildConfig
 import com.codebutler.odyssey.R
 import com.codebutler.odyssey.app.OdysseyApplication
 import com.codebutler.odyssey.app.OdysseyApplicationComponent
@@ -60,7 +62,6 @@ import java.io.File
 import javax.inject.Inject
 
 class GameActivity : AppCompatActivity() {
-
     companion object {
         private const val EXTRA_GAME_ID = "game_id"
 
@@ -74,7 +75,7 @@ class GameActivity : AppCompatActivity() {
     @Inject lateinit var odysseyDatabase: OdysseyDatabase
     @Inject lateinit var gameLibrary: GameLibrary
 
-    private val imageView: ImageView by bindView(R.id.image)
+    private val gameView: GameGlSurfaceView by bindView(R.id.game_gl_surface)
     private val progressBar: ProgressBar by bindView(R.id.progress)
 
     private val handler = Handler()
@@ -114,6 +115,10 @@ class GameActivity : AppCompatActivity() {
                     Timber.e(error, "Failed to load game")
                     finish()
                 })
+
+        if (BuildConfig.DEBUG) {
+            addFpsView()
+        }
     }
 
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
@@ -126,6 +131,16 @@ class GameActivity : AppCompatActivity() {
         super.dispatchKeyEvent(event)
         retroDroid?.onKeyEvent(event)
         return true
+    }
+
+    private fun addFpsView() {
+        val frameLayout = findViewById<FrameLayout>(R.id.game_layout)
+        val fpsView = TextView(this)
+        fpsView.textSize = 18f
+        fpsView.setTextColor(Color.WHITE)
+        fpsView.setShadowLayer(2f, 0f, 0f, Color.BLACK)
+        frameLayout.addView(fpsView)
+        gameView.setFpsCallback({ fps: Long -> handler.post({ fpsView.text = "$fps" }) })
     }
 
     private fun prepareGame(game: Game): Single<PreparedGameData> {
@@ -173,13 +188,7 @@ class GameActivity : AppCompatActivity() {
         }
 
         retroDroid.videoCallback = { bitmap ->
-            handler.post {
-                val drawable = BitmapDrawable(resources, bitmap)
-                drawable.paint.isAntiAlias = false
-                drawable.paint.isDither = false
-                drawable.paint.isFilterBitmap = false
-                imageView.setImageDrawable(drawable)
-            }
+            gameView.update(bitmap)
         }
 
         retroDroid.audioCallback = { buffer ->
@@ -205,7 +214,6 @@ class GameActivity : AppCompatActivity() {
         }
 
         retroDroid.loadGame(data.gameFile.absolutePath, data.saveData)
-        retroDroid.start()
 
         this.game = data.game
         this.retroDroid = retroDroid
