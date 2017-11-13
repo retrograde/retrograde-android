@@ -32,7 +32,7 @@ class GlRenderer2d : GLSurfaceView.Renderer {
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         square = Square()
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f)
+        GLES20.glClearColor(0f, 0f, 0f, 1.0f)
     }
 
     companion object {

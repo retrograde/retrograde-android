@@ -21,6 +21,7 @@ package com.codebutler.odyssey.app.feature.game
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
@@ -30,8 +31,10 @@ import android.support.v7.app.AppCompatActivity
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import com.codebutler.odyssey.BuildConfig
 import com.codebutler.odyssey.R
 import com.codebutler.odyssey.app.OdysseyApplication
 import com.codebutler.odyssey.app.OdysseyApplicationComponent
@@ -73,7 +76,6 @@ class GameActivity : AppCompatActivity() {
     @Inject lateinit var gameLibrary: GameLibrary
 
     private val gameView: GameGlSurfaceView by bindView(R.id.game_gl_surface)
-    private val fpsView: TextView by bindView(R.id.fps)
     private val progressBar: ProgressBar by bindView(R.id.progress)
 
     private val handler = Handler()
@@ -114,7 +116,9 @@ class GameActivity : AppCompatActivity() {
                     finish()
                 })
 
-        gameView.setFpsCallback({ fps: Long -> handler.post({ fpsView.text = "$fps" }) })
+        if (BuildConfig.DEBUG) {
+            addFpsView()
+        }
     }
 
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
@@ -127,6 +131,16 @@ class GameActivity : AppCompatActivity() {
         super.dispatchKeyEvent(event)
         retroDroid?.onKeyEvent(event)
         return true
+    }
+
+    private fun addFpsView() {
+        val frameLayout = findViewById<FrameLayout>(R.id.game_layout)
+        val fpsView = TextView(this)
+        fpsView.textSize = 18f
+        fpsView.setTextColor(Color.WHITE)
+        fpsView.setShadowLayer(2f, 0f, 0f, Color.BLACK)
+        frameLayout.addView(fpsView)
+        gameView.setFpsCallback({ fps: Long -> handler.post({ fpsView.text = "$fps" }) })
     }
 
     private fun prepareGame(game: Game): Single<PreparedGameData> {

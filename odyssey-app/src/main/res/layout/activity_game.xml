@@ -24,9 +24,10 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".app.feature.game.GameActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".app.feature.game.GameActivity">
+    android:id="@+id/game_layout">
 
     <ProgressBar
         android:id="@+id/progress"
@@ -41,12 +42,4 @@
         android:layout_height="match_parent"
         tools:ignore="ContentDescription" />
 
-    <TextView
-        android:id="@+id/fps"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:textColor="@android:color/white"
-        style="@style/Fps">
-
-    </TextView>
 </FrameLayout>
