@@ -3,7 +3,26 @@ package com.codebutler.odyssey.app.feature.game
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.opengl.GLES20
-import android.opengl.GLES20.*
+import android.opengl.GLES20.GL_FLOAT
+import android.opengl.GLES20.GL_NEAREST
+import android.opengl.GLES20.GL_TEXTURE_2D
+import android.opengl.GLES20.GL_TEXTURE_MAG_FILTER
+import android.opengl.GLES20.GL_TEXTURE_MIN_FILTER
+import android.opengl.GLES20.GL_TRIANGLES
+import android.opengl.GLES20.GL_UNSIGNED_SHORT
+import android.opengl.GLES20.glActiveTexture
+import android.opengl.GLES20.glBindTexture
+import android.opengl.GLES20.glDisableVertexAttribArray
+import android.opengl.GLES20.glDrawElements
+import android.opengl.GLES20.glEnableVertexAttribArray
+import android.opengl.GLES20.glGenTextures
+import android.opengl.GLES20.glGetAttribLocation
+import android.opengl.GLES20.glGetUniformLocation
+import android.opengl.GLES20.glTexParameteri
+import android.opengl.GLES20.glUniform1i
+import android.opengl.GLES20.glUniformMatrix4fv
+import android.opengl.GLES20.glUseProgram
+import android.opengl.GLES20.glVertexAttribPointer
 import android.opengl.GLUtils
 import android.opengl.Matrix
 import org.intellij.lang.annotations.Language
@@ -11,7 +30,6 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
-
 
 class Square {
     private val bytesPerFloat: Int = 4
@@ -202,7 +220,7 @@ class Square {
 
         if (texturePool[textureOffset] != 0) {
             val options = BitmapFactory.Options()
-            options.inScaled = false   // No pre-scaling
+            options.inScaled = false // No pre-scaling
 
             // Bind to the texture in OpenGL
             glBindTexture(GL_TEXTURE_2D, texturePool[textureOffset])

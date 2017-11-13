@@ -3,7 +3,7 @@ package com.codebutler.odyssey.app.feature.game
 import android.graphics.Bitmap
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
-import com.codebutler.odyssey.app.feature.common.FpsCalculator
+import com.codebutler.odyssey.lib.rendering.FpsCalculator
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 

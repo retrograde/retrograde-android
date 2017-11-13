@@ -1,4 +1,4 @@
-package com.codebutler.odyssey.app.feature.common
+package com.codebutler.odyssey.lib.rendering
 
 class FpsCalculator {
     companion object {
