@@ -27,6 +27,7 @@ import android.support.v17.leanback.widget.ListRow
 import android.support.v17.leanback.widget.ListRowPresenter
 import android.support.v17.leanback.widget.Presenter
 import android.view.ViewGroup
+import com.codebutler.odyssey.lib.HasComponent
 import com.codebutler.odyssey.lib.library.provider.HasGameLibraryRegistry
 import com.codebutler.odyssey.lib.ui.SimpleItem
 import com.codebutler.odyssey.lib.ui.SimpleItemPresenter
@@ -48,7 +49,8 @@ class GDriveBrowseFragment : BrowseSupportFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val registry = (activity.applicationContext as HasGameLibraryRegistry).gameLibraryProviderRegistry
+        val appComponent = (activity.applicationContext as HasComponent<*>).component
+        val registry = (appComponent as HasGameLibraryRegistry).gameLibraryProviderRegistry()
         val provider = registry.get(GDriveGameLibraryProvider::class)
 
         val component = DaggerGDriveBrowseFragment_Component.builder()
@@ -112,7 +114,7 @@ class GDriveBrowseFragment : BrowseSupportFragment() {
                 }
     }
 
-    private class FilePresenter: Presenter() {
+    private class FilePresenter : Presenter() {
         override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
             val resources = parent.context.resources
 

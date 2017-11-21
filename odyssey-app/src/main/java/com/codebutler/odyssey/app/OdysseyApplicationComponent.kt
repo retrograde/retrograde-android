@@ -23,21 +23,22 @@ import com.codebutler.odyssey.lib.core.CoreManager
 import com.codebutler.odyssey.lib.library.GameLibrary
 import com.codebutler.odyssey.lib.library.db.OdysseyDatabase
 import com.codebutler.odyssey.lib.library.provider.GameLibraryProviderRegistry
+import com.codebutler.odyssey.lib.library.provider.HasGameLibraryRegistry
 import dagger.BindsInstance
 import dagger.Component
 
 @Component(modules = arrayOf(OdysseyApplicationModule::class))
-interface OdysseyApplicationComponent {
+interface OdysseyApplicationComponent : HasGameLibraryRegistry {
 
     fun coreManager(): CoreManager
 
     fun gameLibrary(): GameLibrary
 
-    fun gameLibraryProviderRegistry(): GameLibraryProviderRegistry
-
     fun odysseyDb(): OdysseyDatabase
 
     fun inject(app: OdysseyApplication)
+
+    override fun gameLibraryProviderRegistry(): GameLibraryProviderRegistry
 
     @Component.Builder
     interface Builder {

@@ -1,5 +1,5 @@
 /*
- * HasGameLibraryRegistry.kt
+ * HasComponent.kt
  *
  * Copyright (C) 2017 Odyssey Project
  *
@@ -17,8 +17,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.codebutler.odyssey.lib.library.provider
+package com.codebutler.odyssey.lib
 
-interface HasGameLibraryRegistry {
-    fun gameLibraryProviderRegistry(): GameLibraryProviderRegistry
+interface HasComponent<out T> {
+    val component: T
 }

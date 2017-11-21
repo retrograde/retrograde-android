@@ -56,7 +56,7 @@ class GDrivePreferenceFragment : LeanbackPreferenceFragment() {
         return super.onPreferenceTreeClick(preference)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
             REQUEST_GOOGLE_SIGNIN -> {
@@ -74,7 +74,7 @@ class GDrivePreferenceFragment : LeanbackPreferenceFragment() {
             }
             REQUEST_SELECT_FOLDER -> {
                 val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                if (resultCode == RESULT_OK) {
+                if (resultCode == RESULT_OK && data != null) {
                     val folderId = data.getStringExtra(GDriveBrowseActivity.BUNDLE_FOLDER_ID)
                     prefs.edit().putString(PREF_KEY_FOLDER_ID, folderId).apply()
                 } else {
