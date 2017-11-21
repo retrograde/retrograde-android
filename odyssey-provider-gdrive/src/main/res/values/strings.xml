@@ -25,4 +25,5 @@
     <string name="gdrive_sign_in_success">Logged in to Google as %s</string>
     <string name="gdrive_pref_key_configure" translatable="false">configure</string>
     <string name="gdrive_use_this_folder">Use This Folder</string>
+    <string name="gdrive_select_folder">Select Folder</string>
 </resources>

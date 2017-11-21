@@ -40,6 +40,10 @@ import javax.inject.Inject
 
 class GDriveBrowseFragment : BrowseSupportFragment() {
 
+    companion object {
+        private const val FOLDER_ID_ROOT = "root"
+    }
+
     private object UseFolderItem : SimpleItem(R.string.gdrive_use_this_folder)
 
     @Inject lateinit var gdriveBrowser: GDriveBrowser
@@ -68,10 +72,10 @@ class GDriveBrowseFragment : BrowseSupportFragment() {
             }
         }
 
-        title = "Select Folder"
+        title = getString(R.string.gdrive_select_folder)
         headersState = HEADERS_DISABLED
 
-        navigateDownTo("root")
+        navigateDownTo(FOLDER_ID_ROOT)
     }
 
     fun onBackPressed() = navigateUp()

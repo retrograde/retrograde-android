@@ -24,26 +24,29 @@ import android.net.Uri
 import com.codebutler.odyssey.lib.library.GameLibraryFile
 import com.codebutler.odyssey.lib.library.db.entity.Game
 import com.codebutler.odyssey.lib.library.provider.GameLibraryProvider
-import com.gojuno.koptional.None
 import com.gojuno.koptional.Optional
-import com.google.api.services.drive.Drive
+import com.gojuno.koptional.toOptional
+import com.google.android.gms.common.api.Scope
+import com.google.api.services.drive.DriveScopes
 import io.reactivex.Completable
 import io.reactivex.Single
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
-import javax.inject.Provider
-import kotlin.coroutines.experimental.buildSequence
-
-private typealias GDriveFile = com.google.api.services.drive.model.File
 
 class GDriveGameLibraryProvider(private val context: Context) : GameLibraryProvider {
+
+    companion object {
+        private const val SPACE_APP_DATA = "appDataFolder"
+
+        val SCOPES = listOf(Scope(DriveScopes.DRIVE_READONLY), Scope(DriveScopes.DRIVE_APPDATA))
+    }
 
     val component = DaggerGDriveComponent.builder()
             .context(context)
             .build()
 
-    @Inject lateinit var driveProvider: Provider<Optional<Drive>>
+    @Inject lateinit var driveBrowser: GDriveBrowser
 
     init {
         component.inject(this)
@@ -56,9 +59,8 @@ class GDriveGameLibraryProvider(private val context: Context) : GameLibraryProvi
     override val prefsFragmentClass = GDrivePreferenceFragment::class.java
 
     override fun listFiles(): Single<Iterable<GameLibraryFile>> = Single.fromCallable {
-        val folderId = getFolderId() ?: return@fromCallable listOf<GameLibraryFile>()
-        val driveClient = driveProvider.get().toNullable() ?: return@fromCallable listOf<GameLibraryFile>()
-        listDriveFiles(driveClient, folderId)
+        val folderId = getGameLibraryFolderId() ?: return@fromCallable listOf<GameLibraryFile>()
+        driveBrowser.listRecursive(folderId)
                 .filter { file -> file.getSize() != null }
                 .map { file ->
                     GameLibraryFile(
@@ -72,51 +74,33 @@ class GDriveGameLibraryProvider(private val context: Context) : GameLibraryProvi
                 .asIterable()
     }
 
-    override fun getGameRom(game: Game): Single<File> {
+    override fun getGameRom(game: Game): Single<File> = Single.fromCallable {
         val gamesCacheDir = File(context.cacheDir, "gdrive-games")
         gamesCacheDir.mkdirs()
         val gameFile = File(gamesCacheDir, game.fileName)
         if (gameFile.exists()) {
-            return Single.just(gameFile)
+            return@fromCallable gameFile
         }
-        val driveClient = driveProvider.get().toNullable() ?: throw IllegalStateException()
-        return Single.fromCallable {
-            FileOutputStream(gameFile).use { stream ->
-                driveClient.files()
-                        .get(game.fileUri.authority)
-                        .executeMediaAndDownloadTo(stream)
-            }
-            gameFile
+        FileOutputStream(gameFile).use { stream ->
+            driveBrowser.downloadById(game.fileUri.authority, stream)
         }
+        gameFile
     }
 
-    override fun getGameSave(game: Game): Single<Optional<ByteArray>> = Single.just(None) // FIXME
+    override fun getGameSave(game: Game): Single<Optional<ByteArray>> = Single.fromCallable {
+        val fileName = getSaveFileName(game)
+        driveBrowser.downloadByName(SPACE_APP_DATA, null, fileName).toOptional()
+    }
 
-    override fun setGameSave(game: Game, data: ByteArray): Completable = Completable.complete() // FIXME
+    override fun setGameSave(game: Game, data: ByteArray): Completable = Completable.fromCallable {
+        val fileName = getSaveFileName(game)
+        driveBrowser.uploadByName(SPACE_APP_DATA, null, fileName, data)
+    }
 
-    private fun getFolderId(): String? {
+    private fun getGameLibraryFolderId(): String? {
         val prefs = context.getSharedPreferences(GDrivePreferenceFragment.PREFS_NAME, Context.MODE_PRIVATE)
         return prefs.getString(GDrivePreferenceFragment.PREF_KEY_FOLDER_ID, null)
     }
 
-    private fun listDriveFiles(driveClient: Drive, folderId: String): Sequence<GDriveFile> {
-        return buildSequence {
-            var pageToken: String? = null
-            do {
-                val result = driveClient.files().list()
-                        .setQ("'$folderId' in parents")
-                        .setFields("nextPageToken, files(id, name, mimeType, size)")
-                        .setPageToken(pageToken)
-                        .execute()
-                for (file in result.files) {
-                    if (file.mimeType == "application/vnd.google-apps.folder") {
-                        yieldAll(listDriveFiles(driveClient, file.id))
-                    } else {
-                        yield(file)
-                    }
-                }
-                pageToken = result.nextPageToken
-            } while (pageToken != null)
-        }
-    }
+    private fun getSaveFileName(game: Game) = "${game.fileName}.sram"
 }

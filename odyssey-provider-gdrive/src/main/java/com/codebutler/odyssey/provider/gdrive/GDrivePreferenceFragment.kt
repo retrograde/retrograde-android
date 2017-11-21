@@ -29,8 +29,6 @@ import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.common.api.Scope
-import com.google.api.services.drive.DriveScopes
 import timber.log.Timber
 
 class GDrivePreferenceFragment : LeanbackPreferenceFragment() {
@@ -85,12 +83,12 @@ class GDrivePreferenceFragment : LeanbackPreferenceFragment() {
     }
 
     private fun authenticateGoogle() {
-        val driveScope = Scope(DriveScopes.DRIVE)
-        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(context), driveScope)) {
+        val scopesArray = GDriveGameLibraryProvider.SCOPES.toTypedArray()
+        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(context), *scopesArray)) {
             val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestId()
                     .requestEmail()
-                    .requestScopes(driveScope)
+                    .requestScopes(scopesArray.first(), *scopesArray.sliceArray(1..scopesArray.lastIndex))
                     .build()
             val signInClient = GoogleSignIn.getClient(context, signInOptions)
             startActivityForResult(signInClient.signInIntent, REQUEST_GOOGLE_SIGNIN)

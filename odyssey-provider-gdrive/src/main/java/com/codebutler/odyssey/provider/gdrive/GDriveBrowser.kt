@@ -20,28 +20,104 @@
 package com.codebutler.odyssey.provider.gdrive
 
 import com.gojuno.koptional.Optional
+import com.google.api.client.http.ByteArrayContent
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
 import io.reactivex.Single
+import java.io.FileOutputStream
 import javax.inject.Provider
+import kotlin.coroutines.experimental.buildSequence
 
 class GDriveBrowser(private val driveProvider: Provider<Optional<Drive>>) {
 
-    fun list(parentId: String = "root"): Single<List<File>> = Single.fromCallable {
-        val drive = driveProvider.get().toNullable() ?: return@fromCallable listOf<File>()
-        allPages(drive.files().list()
-                .setQ("'$parentId' in parents")
-                .setFields("nextPageToken, files(id, name, mimeType, size)"))
+    fun downloadById(fileId: String, stream: FileOutputStream) {
+        val drive = driveProvider.get().toNullable() ?: throw IllegalStateException()
+        drive.files()
+                .get(fileId)
+                .executeMediaAndDownloadTo(stream)
     }
 
-    private fun allPages(query: Drive.Files.List): List<File> {
+    fun downloadByName(space: String = "drive", parentFolderId: String?, fileName: String): ByteArray? {
+        val drive = driveProvider.get().toNullable() ?: throw IllegalStateException()
+        val existingFile = getFileMetadata(drive, space, parentFolderId, fileName)
+        val fileId = existingFile?.id ?: return null
+        return drive.files()
+                .get(fileId)
+                .executeMediaAsInputStream()
+                .use { stream -> stream.readBytes() }
+    }
+
+    fun uploadByName(space: String = "drive", parentFolderId: String?, fileName: String, data: ByteArray) {
+        val drive = driveProvider.get().toNullable() ?: throw IllegalStateException()
+        val content = ByteArrayContent("application/octet-stream", data)
+        val existingFile = getFileMetadata(drive, space, parentFolderId, fileName)
+        if (existingFile != null) {
+            drive.files().update(existingFile.id, null, content)
+                    .execute()
+        } else {
+            val newFile = File()
+            newFile.name = fileName
+            if (parentFolderId != null) {
+                newFile.parents = listOf(parentFolderId)
+            }
+            drive.files()
+                    .create(newFile, content)
+                    .setFields("id, parents, name")
+                    .execute()
+        }
+    }
+
+    fun list(parentId: String): Single<List<File>> = Single.fromCallable {
+        val drive = driveProvider.get().toNullable() ?: return@fromCallable listOf<File>()
         val mutableList = mutableListOf<File>()
         var pageToken: String? = null
         do {
-            val result = query.setPageToken(pageToken).execute()
+            val result = drive.files().list()
+                .setQ("'$parentId' in parents")
+                .setFields("nextPageToken, files(id, name, mimeType, size)").setPageToken(pageToken).execute()
             mutableList.addAll(result.files)
             pageToken = result.nextPageToken
         } while (pageToken != null)
-        return mutableList.toList()
+        mutableList.toList()
+    }
+
+    fun listRecursive(folderId: String): Sequence<File> {
+        val drive = driveProvider.get().toNullable() ?: return emptySequence()
+        return listRecursive(drive, folderId)
+    }
+
+    private fun getFileMetadata(drive: Drive, space: String, parentId: String?, fileName: String): File? {
+        val q = if (parentId != null) {
+            "'$parentId' in parents and name = '$fileName'"
+        } else {
+            "name = '$fileName'"
+        }
+        return drive.files().list()
+                .setSpaces(space)
+                .setQ(q)
+                .execute()
+                .files
+                .firstOrNull()
+    }
+
+    private fun listRecursive(drive: Drive, folderId: String): Sequence<File> {
+        var pageToken: String? = null
+        return buildSequence {
+            do {
+                val result = drive.files().list()
+                        .setQ("'$folderId' in parents")
+                        .setFields("nextPageToken, files(id, name, mimeType, size)")
+                        .setPageToken(pageToken)
+                        .execute()
+                for (file in result.files) {
+                    if (file.mimeType == "application/vnd.google-apps.folder") {
+                        yieldAll(listRecursive(drive, file.id))
+                    } else {
+                        yield(file)
+                    }
+                }
+                pageToken = result.nextPageToken
+            } while (pageToken != null)
+        }
     }
 }

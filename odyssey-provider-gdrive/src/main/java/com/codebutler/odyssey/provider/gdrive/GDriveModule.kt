@@ -28,7 +28,6 @@ import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.extensions.android.json.AndroidJsonFactory
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.services.drive.Drive
-import com.google.api.services.drive.DriveScopes
 import dagger.Module
 import dagger.Provides
 import javax.inject.Provider
@@ -42,7 +41,9 @@ abstract class GDriveModule {
         fun drive(context: Context): Optional<Drive> {
             val googleAccount = GoogleSignIn.getLastSignedInAccount(context) ?: return None
 
-            val credential = GoogleAccountCredential.usingOAuth2(context, listOf(DriveScopes.DRIVE))
+            val scopeNames = GDriveGameLibraryProvider.SCOPES.map { scope -> scope.toString() }
+
+            val credential = GoogleAccountCredential.usingOAuth2(context, scopeNames)
             credential.selectedAccount = googleAccount.account
 
             val httpTransport = AndroidHttp.newCompatibleTransport()
