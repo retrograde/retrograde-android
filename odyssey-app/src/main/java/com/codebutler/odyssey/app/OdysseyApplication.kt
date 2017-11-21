@@ -22,11 +22,12 @@ package com.codebutler.odyssey.app
 import android.app.Application
 import android.content.Context
 import com.codebutler.odyssey.BuildConfig
+import com.codebutler.odyssey.lib.library.provider.HasGameLibraryRegistry
 import com.crashlytics.android.Crashlytics
 import io.fabric.sdk.android.Fabric
 import timber.log.Timber
 
-class OdysseyApplication : Application() {
+class OdysseyApplication : Application(), HasGameLibraryRegistry {
 
     companion object {
         init {
@@ -41,6 +42,9 @@ class OdysseyApplication : Application() {
 
     lateinit var component: OdysseyApplicationComponent
 
+    override val gameLibraryProviderRegistry
+        get() = component.gameLibraryProviderRegistry()
+
     override fun onCreate() {
         super.onCreate()
 
@@ -51,6 +55,7 @@ class OdysseyApplication : Application() {
         component = DaggerOdysseyApplicationComponent.builder()
                 .application(this)
                 .build()
+
 
         if (!BuildConfig.DEBUG) {
             Fabric.with(this, Crashlytics())

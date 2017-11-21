@@ -31,14 +31,23 @@ import io.reactivex.Completable
 import io.reactivex.Single
 import java.io.File
 import java.io.FileOutputStream
+import javax.inject.Inject
 import javax.inject.Provider
 import kotlin.coroutines.experimental.buildSequence
 
 private typealias GDriveFile = com.google.api.services.drive.model.File
 
-class GDriveGameLibraryProvider(
-        private val context: Context,
-        private val driveProvider: Provider<Optional<Drive>>) : GameLibraryProvider {
+class GDriveGameLibraryProvider(private val context: Context) : GameLibraryProvider {
+
+    val component = DaggerGDriveComponent.builder()
+            .context(context)
+            .build()
+
+    @Inject lateinit var driveProvider: Provider<Optional<Drive>>
+
+    init {
+        component.inject(this)
+    }
 
     override val name: String = context.getString(R.string.gdrive_google_drive)
 

@@ -19,7 +19,6 @@
 
 package com.codebutler.odyssey.provider.gdrive
 
-import android.content.Context
 import android.os.Bundle
 import android.support.v17.leanback.app.BrowseSupportFragment
 import android.support.v17.leanback.widget.ArrayObjectAdapter
@@ -28,12 +27,12 @@ import android.support.v17.leanback.widget.ListRow
 import android.support.v17.leanback.widget.ListRowPresenter
 import android.support.v17.leanback.widget.Presenter
 import android.view.ViewGroup
+import com.codebutler.odyssey.lib.library.provider.HasGameLibraryRegistry
 import com.codebutler.odyssey.lib.ui.SimpleItem
 import com.codebutler.odyssey.lib.ui.SimpleItemPresenter
 import com.google.api.services.drive.model.File
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.kotlin.autoDisposeWith
-import dagger.BindsInstance
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
@@ -44,17 +43,18 @@ class GDriveBrowseFragment : BrowseSupportFragment() {
 
     @Inject lateinit var gdriveBrowser: GDriveBrowser
 
-    private lateinit var component: Component
     private val navigationStack = mutableListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        component = DaggerGDriveBrowseFragment_Component.builder()
-                .context(activity)
+        val registry = (activity.applicationContext as HasGameLibraryRegistry).gameLibraryProviderRegistry
+        val provider = registry.get(GDriveGameLibraryProvider::class)
+
+        val component = DaggerGDriveBrowseFragment_Component.builder()
+                .gDriveComponent(provider.component)
                 .build()
         component.inject(this)
-
 
         setOnItemViewClickedListener { _, item, _, _ ->
             when (item) {
@@ -143,16 +143,8 @@ class GDriveBrowseFragment : BrowseSupportFragment() {
         fun onFolderSelected(folderId: String)
     }
 
-    @dagger.Component(modules = arrayOf(GDriveModule::class))
+    @dagger.Component(dependencies = arrayOf(GDriveComponent::class))
     interface Component {
         fun inject(fragment: GDriveBrowseFragment)
-
-        @dagger.Component.Builder
-        interface Builder {
-            @BindsInstance
-            fun context(context: Context): Builder
-
-            fun build(): Component
-        }
     }
 }

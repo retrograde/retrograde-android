@@ -20,7 +20,6 @@
 package com.codebutler.odyssey.provider.gdrive
 
 import android.content.Context
-import com.codebutler.odyssey.lib.library.provider.GameLibraryProvider
 import com.gojuno.koptional.None
 import com.gojuno.koptional.Optional
 import com.gojuno.koptional.toOptional
@@ -32,7 +31,6 @@ import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import dagger.Module
 import dagger.Provides
-import dagger.multibindings.IntoSet
 import javax.inject.Provider
 
 @Module
@@ -59,11 +57,5 @@ abstract class GDriveModule {
         @Provides
         @JvmStatic
         fun gdriveBrowser(driveProvider: Provider<Optional<Drive>>) = GDriveBrowser(driveProvider)
-
-        @Provides
-        @IntoSet
-        @JvmStatic
-        fun gdriveLibraryProvider(context: Context, driveProvider: Provider<Optional<Drive>>): GameLibraryProvider
-                = GDriveGameLibraryProvider(context, driveProvider)
     }
 }

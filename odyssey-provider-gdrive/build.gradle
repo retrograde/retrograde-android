@@ -37,8 +37,7 @@ dependencies {
     implementation(libs.googleApiClientAndroid) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
     }
-    // FIXME implementation(libs.googleApiServicesDrive) {
-    api(libs.googleApiServicesDrive) {
+    implementation(libs.googleApiServicesDrive) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
     }
 }

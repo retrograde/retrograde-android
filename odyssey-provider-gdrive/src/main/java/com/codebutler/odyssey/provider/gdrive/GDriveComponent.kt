@@ -1,5 +1,5 @@
 /*
- * GameLibraryProviderRegistry.kt
+ * Component.kt
  *
  * Copyright (C) 2017 Odyssey Project
  *
@@ -17,16 +17,23 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.codebutler.odyssey.lib.library.provider
+package com.codebutler.odyssey.provider.gdrive
 
-import com.codebutler.odyssey.lib.library.db.entity.Game
-import kotlin.reflect.KClass
+import android.content.Context
+import dagger.BindsInstance
 
-class GameLibraryProviderRegistry(val providers: Set<GameLibraryProvider>) {
+@dagger.Component(modules = arrayOf(GDriveModule::class))
+interface GDriveComponent {
 
-    @Suppress("UNCHECKED_CAST")
-    fun <T : GameLibraryProvider> get(klazz: KClass<T>): T
-            = providers.find { provider -> provider::class == klazz } as T
+    fun gdriveBrowser(): GDriveBrowser
 
-    fun getProvider(game: Game) = providers.find { it.uriSchemes.contains(game.fileUri.scheme) }!!
+    fun inject(provider: GDriveGameLibraryProvider)
+
+    @dagger.Component.Builder
+    interface Builder {
+        @BindsInstance
+        fun context(context: Context): Builder
+
+        fun build(): GDriveComponent
+    }
 }

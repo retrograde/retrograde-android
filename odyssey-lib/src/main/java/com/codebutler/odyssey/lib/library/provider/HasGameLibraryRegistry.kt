@@ -1,5 +1,5 @@
 /*
- * GameLibraryProviderRegistry.kt
+ * HasGameLibraryRegistry.kt
  *
  * Copyright (C) 2017 Odyssey Project
  *
@@ -19,14 +19,6 @@
 
 package com.codebutler.odyssey.lib.library.provider
 
-import com.codebutler.odyssey.lib.library.db.entity.Game
-import kotlin.reflect.KClass
-
-class GameLibraryProviderRegistry(val providers: Set<GameLibraryProvider>) {
-
-    @Suppress("UNCHECKED_CAST")
-    fun <T : GameLibraryProvider> get(klazz: KClass<T>): T
-            = providers.find { provider -> provider::class == klazz } as T
-
-    fun getProvider(game: Game) = providers.find { it.uriSchemes.contains(game.fileUri.scheme) }!!
+interface HasGameLibraryRegistry {
+    val gameLibraryProviderRegistry: GameLibraryProviderRegistry
 }

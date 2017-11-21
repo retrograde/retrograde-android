@@ -28,7 +28,7 @@ import com.codebutler.odyssey.lib.library.provider.GameLibraryProvider
 import com.codebutler.odyssey.lib.library.provider.GameLibraryProviderRegistry
 import com.codebutler.odyssey.lib.library.provider.local.LocalGameLibraryProvider
 import com.codebutler.odyssey.lib.ovgdb.OvgdbManager
-import com.codebutler.odyssey.provider.gdrive.GDriveModule
+import com.codebutler.odyssey.provider.gdrive.GDriveGameLibraryProvider
 import com.codebutler.odyssey.provider.webdav.WebDavLibraryProvider
 import dagger.Binds
 import dagger.Module
@@ -46,7 +46,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipInputStream
 
-@Module(includes = arrayOf(GDriveModule::class)) // FIXME: Duplicate instance with GDriveBrowseFragment.Component
+@Module
 abstract class OdysseyApplicationModule {
 
     @Binds
@@ -77,7 +77,12 @@ abstract class OdysseyApplicationModule {
         @Provides
         @IntoSet
         @JvmStatic
-        fun webDavGameLibraryProvider(app: OdysseyApplication): GameLibraryProvider = WebDavLibraryProvider(app) // FIXME: Move to webdav subproject
+        fun webDavGameLibraryProvider(app: OdysseyApplication): GameLibraryProvider = WebDavLibraryProvider(app)
+
+        @Provides
+        @IntoSet
+        @JvmStatic
+        fun gdriveLibraryProvider(context: Context): GameLibraryProvider = GDriveGameLibraryProvider(context)
 
         @Provides
         @JvmStatic
