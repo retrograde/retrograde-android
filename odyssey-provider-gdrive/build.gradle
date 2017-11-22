@@ -40,7 +40,7 @@ dependencies {
     implementation(libs.googleApiClientAndroid) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
     }
-    api(libs.googleApiServicesDrive) { // FIXME: Can this be "implementation"?
+    implementation(libs.googleApiServicesDrive) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
     }
 }

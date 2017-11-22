@@ -20,13 +20,7 @@
 package com.codebutler.odyssey.provider.gdrive
 
 import android.content.Context
-import com.gojuno.koptional.None
 import com.gojuno.koptional.Optional
-import com.gojuno.koptional.toOptional
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.api.client.extensions.android.http.AndroidHttp
-import com.google.api.client.extensions.android.json.AndroidJsonFactory
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.services.drive.Drive
 import dagger.Module
 import dagger.Provides
@@ -38,25 +32,10 @@ internal abstract class GDriveModule {
     companion object {
         @Provides
         @JvmStatic
-        fun drive(context: Context): Optional<Drive> {
-            val googleAccount = GoogleSignIn.getLastSignedInAccount(context) ?: return None
-
-            val scopeNames = GDriveGameLibraryProvider.SCOPES.map { scope -> scope.toString() }
-
-            val credential = GoogleAccountCredential.usingOAuth2(context, scopeNames)
-            credential.selectedAccount = googleAccount.account
-
-            val httpTransport = AndroidHttp.newCompatibleTransport()
-            val jsonFactory = AndroidJsonFactory.getDefaultInstance()
-
-            return Drive.Builder(httpTransport, jsonFactory, credential)
-                    .setApplicationName(BuildConfig.APPLICATION_ID)
-                    .build()
-                    .toOptional()
-        }
+        fun driveFactory(context: Context) = DriveFactory(context)
 
         @Provides
         @JvmStatic
-        fun gdriveBrowser(driveProvider: Provider<Optional<Drive>>) = GDriveBrowser(driveProvider)
+        fun gdriveBrowser(driveFactory: DriveFactory) = GDriveBrowser(driveFactory)
     }
 }

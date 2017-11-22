@@ -34,9 +34,9 @@ interface OdysseyApplicationComponent {
 
     fun gameLibrary(): GameLibrary
 
-    fun odysseyDb(): OdysseyDatabase
-
     fun gameLibraryProviderRegistry(): GameLibraryProviderRegistry
+
+    fun odysseyDb(): OdysseyDatabase
 
     fun inject(app: OdysseyApplication)
 

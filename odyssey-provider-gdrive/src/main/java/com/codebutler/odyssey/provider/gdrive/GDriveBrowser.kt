@@ -19,26 +19,24 @@
 
 package com.codebutler.odyssey.provider.gdrive
 
-import com.gojuno.koptional.Optional
 import com.google.api.client.http.ByteArrayContent
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
 import io.reactivex.Single
 import java.io.FileOutputStream
-import javax.inject.Provider
 import kotlin.coroutines.experimental.buildSequence
 
-class GDriveBrowser(private val driveProvider: Provider<Optional<Drive>>) {
+class GDriveBrowser(private val driveFactory: DriveFactory) {
 
     fun downloadById(fileId: String, stream: FileOutputStream) {
-        val drive = driveProvider.get().toNullable() ?: throw IllegalStateException()
+        val drive = driveFactory.create().toNullable() ?: throw IllegalStateException()
         drive.files()
                 .get(fileId)
                 .executeMediaAndDownloadTo(stream)
     }
 
     fun downloadByName(space: String = "drive", parentFolderId: String?, fileName: String): ByteArray? {
-        val drive = driveProvider.get().toNullable() ?: throw IllegalStateException()
+        val drive = driveFactory.create().toNullable() ?: throw IllegalStateException()
         val existingFile = getFileMetadata(drive, space, parentFolderId, fileName)
         val fileId = existingFile?.id ?: return null
         return drive.files()
@@ -48,7 +46,7 @@ class GDriveBrowser(private val driveProvider: Provider<Optional<Drive>>) {
     }
 
     fun uploadByName(space: String = "drive", parentFolderId: String?, fileName: String, data: ByteArray) {
-        val drive = driveProvider.get().toNullable() ?: throw IllegalStateException()
+        val drive = driveFactory.create().toNullable() ?: throw IllegalStateException()
         val content = ByteArrayContent("application/octet-stream", data)
         val existingFile = getFileMetadata(drive, space, parentFolderId, fileName)
         if (existingFile != null) {
@@ -68,7 +66,7 @@ class GDriveBrowser(private val driveProvider: Provider<Optional<Drive>>) {
     }
 
     fun list(parentId: String): Single<List<File>> = Single.fromCallable {
-        val drive = driveProvider.get().toNullable() ?: return@fromCallable listOf<File>()
+        val drive = driveFactory.create().toNullable() ?: return@fromCallable listOf<File>()
         val mutableList = mutableListOf<File>()
         var pageToken: String? = null
         do {
@@ -82,7 +80,7 @@ class GDriveBrowser(private val driveProvider: Provider<Optional<Drive>>) {
     }
 
     fun listRecursive(folderId: String): Sequence<File> {
-        val drive = driveProvider.get().toNullable() ?: return emptySequence()
+        val drive = driveFactory.create().toNullable() ?: return emptySequence()
         return listRecursive(drive, folderId)
     }
 
