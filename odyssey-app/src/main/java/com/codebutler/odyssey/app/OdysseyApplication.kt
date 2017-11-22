@@ -23,7 +23,6 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import com.codebutler.odyssey.BuildConfig
-import com.codebutler.odyssey.lib.HasComponent
 import com.crashlytics.android.Crashlytics
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -32,7 +31,7 @@ import io.fabric.sdk.android.Fabric
 import timber.log.Timber
 import javax.inject.Inject
 
-class OdysseyApplication : Application(), HasComponent<OdysseyApplicationComponent>, HasActivityInjector {
+class OdysseyApplication : Application(), HasActivityInjector {
 
     companion object {
         init {
@@ -45,9 +44,9 @@ class OdysseyApplication : Application(), HasComponent<OdysseyApplicationCompone
 
     }
 
-    @Inject lateinit var dispatchingActivityInjector: DispatchingAndroidInjector<Activity>
+    lateinit var component: OdysseyApplicationComponent
 
-    override lateinit var component: OdysseyApplicationComponent
+    @Inject lateinit var dispatchingActivityInjector: DispatchingAndroidInjector<Activity>
 
     override fun onCreate() {
         super.onCreate()

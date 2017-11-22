@@ -23,13 +23,12 @@ import com.codebutler.odyssey.lib.core.CoreManager
 import com.codebutler.odyssey.lib.library.GameLibrary
 import com.codebutler.odyssey.lib.library.db.OdysseyDatabase
 import com.codebutler.odyssey.lib.library.provider.GameLibraryProviderRegistry
-import com.codebutler.odyssey.lib.library.provider.HasGameLibraryRegistry
-import com.codebutler.odyssey.provider.gdrive.GDriveIntegrationModule
+import com.codebutler.odyssey.provider.gdrive.GDriveApplicationModule
 import dagger.BindsInstance
 import dagger.Component
 
-@Component(modules = arrayOf(OdysseyApplicationModule::class, GDriveIntegrationModule::class))
-interface OdysseyApplicationComponent : HasGameLibraryRegistry {
+@Component(modules = arrayOf(OdysseyApplicationModule::class, GDriveApplicationModule::class))
+interface OdysseyApplicationComponent {
 
     fun coreManager(): CoreManager
 
@@ -37,9 +36,9 @@ interface OdysseyApplicationComponent : HasGameLibraryRegistry {
 
     fun odysseyDb(): OdysseyDatabase
 
-    fun inject(app: OdysseyApplication)
+    fun gameLibraryProviderRegistry(): GameLibraryProviderRegistry
 
-    override fun gameLibraryProviderRegistry(): GameLibraryProviderRegistry
+    fun inject(app: OdysseyApplication)
 
     @Component.Builder
     interface Builder {

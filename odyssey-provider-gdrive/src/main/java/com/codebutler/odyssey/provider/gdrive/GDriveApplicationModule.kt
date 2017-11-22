@@ -21,7 +21,7 @@ package com.codebutler.odyssey.provider.gdrive
 
 import android.app.Activity
 import com.codebutler.odyssey.lib.library.provider.GameLibraryProvider
-import com.codebutler.odyssey.lib.library.provider.GameLibraryProviderRegistry
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.android.ActivityKey
@@ -30,20 +30,23 @@ import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 
 @Module(subcomponents = arrayOf(GDriveComponent::class))
-abstract class GDriveIntegrationModule {
+abstract class GDriveApplicationModule {
+
+    @Binds
+    @IntoSet
+    abstract fun bindsProviderIntoSet(provider: GDriveGameLibraryProvider): GameLibraryProvider
+
     @Module
     companion object {
         @Provides
         @JvmStatic
-        @IntoSet
-        fun gdriveLibraryProvider(componentBuilder: GDriveComponent.Builder): GameLibraryProvider
-                = GDriveGameLibraryProvider(componentBuilder)
+        fun gameLibraryProvider(componentBuilder: GDriveComponent.Builder) = GDriveGameLibraryProvider(componentBuilder)
 
         @Provides
         @IntoMap
         @JvmStatic
         @ActivityKey(GDriveBrowseActivity::class)
-        fun bindYourActivityInjectorFactory(registry: GameLibraryProviderRegistry): AndroidInjector.Factory<out Activity>
-                = registry.get(GDriveGameLibraryProvider::class).component.activitySubcomponentBuilder()
+        fun activityInjectorFactory(provider: GDriveGameLibraryProvider): AndroidInjector.Factory<out Activity>
+                = provider.component.activitySubcomponentBuilder()
     }
 }

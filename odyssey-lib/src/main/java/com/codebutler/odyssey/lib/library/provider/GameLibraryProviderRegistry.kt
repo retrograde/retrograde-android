@@ -20,13 +20,14 @@
 package com.codebutler.odyssey.lib.library.provider
 
 import com.codebutler.odyssey.lib.library.db.entity.Game
-import kotlin.reflect.KClass
 
 class GameLibraryProviderRegistry(val providers: Set<GameLibraryProvider>) {
 
-    @Suppress("UNCHECKED_CAST")
-    fun <T : GameLibraryProvider> get(klazz: KClass<T>): T
-            = providers.find { provider -> provider::class == klazz } as T
+    private val providersByScheme = mapOf(*providers.map { provider ->
+        provider.uriSchemes.map { scheme ->
+            scheme to provider
+        }
+    }.flatten().toTypedArray())
 
-    fun getProvider(game: Game) = providers.find { it.uriSchemes.contains(game.fileUri.scheme) }!!
+    fun getProvider(game: Game) = providersByScheme[game.fileUri.scheme]!!
 }
