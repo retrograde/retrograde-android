@@ -19,7 +19,6 @@ dependencies {
 
     implementation 'javax.inject:javax.inject:1'
 
-
     implementation libs.autoDispose
     implementation libs.autoDisposeAndroid
     implementation libs.autoDisposeAndroidArch
@@ -31,13 +30,17 @@ dependencies {
 
     kapt libs.daggerCompiler
 
+    implementation libs.daggerAndroid
+    implementation libs.daggerAndroidSupport
+    kapt libs.daggerAndroidProcessor
+
     implementation(libs.googleApiClient) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
     }
     implementation(libs.googleApiClientAndroid) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
     }
-    implementation(libs.googleApiServicesDrive) {
+    api(libs.googleApiServicesDrive) { // FIXME: Can this be "implementation"?
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
     }
 }

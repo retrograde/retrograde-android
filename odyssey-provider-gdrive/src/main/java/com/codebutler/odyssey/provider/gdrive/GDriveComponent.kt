@@ -19,21 +19,24 @@
 
 package com.codebutler.odyssey.provider.gdrive
 
-import android.content.Context
-import dagger.BindsInstance
+import dagger.Subcomponent
+import javax.inject.Scope
 
-@dagger.Component(modules = arrayOf(GDriveModule::class))
+@GDriveScope
+@Subcomponent(modules = arrayOf(GDriveModule::class))
 interface GDriveComponent {
+
+    fun activitySubcomponentBuilder(): GDriveBrowseActivityComponent.Builder
 
     fun gdriveBrowser(): GDriveBrowser
 
     fun inject(provider: GDriveGameLibraryProvider)
 
-    @dagger.Component.Builder
+    @Subcomponent.Builder
     interface Builder {
-        @BindsInstance
-        fun context(context: Context): Builder
-
         fun build(): GDriveComponent
     }
 }
+
+@Scope
+annotation class GDriveScope

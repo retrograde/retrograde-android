@@ -24,10 +24,11 @@ import com.codebutler.odyssey.lib.library.GameLibrary
 import com.codebutler.odyssey.lib.library.db.OdysseyDatabase
 import com.codebutler.odyssey.lib.library.provider.GameLibraryProviderRegistry
 import com.codebutler.odyssey.lib.library.provider.HasGameLibraryRegistry
+import com.codebutler.odyssey.provider.gdrive.GDriveIntegrationModule
 import dagger.BindsInstance
 import dagger.Component
 
-@Component(modules = arrayOf(OdysseyApplicationModule::class))
+@Component(modules = arrayOf(OdysseyApplicationModule::class, GDriveIntegrationModule::class))
 interface OdysseyApplicationComponent : HasGameLibraryRegistry {
 
     fun coreManager(): CoreManager

@@ -56,6 +56,10 @@ dependencies {
     implementation libs.supportPrefLeanbackV17
     implementation libs.supportRecyclerViewV7
 
+    implementation libs.daggerAndroid
+    implementation libs.daggerAndroidSupport
+    kapt libs.daggerAndroidProcessor
+
     implementation('com.crashlytics.sdk.android:crashlytics:2.7.1@aar') {
         transitive = true;
     }

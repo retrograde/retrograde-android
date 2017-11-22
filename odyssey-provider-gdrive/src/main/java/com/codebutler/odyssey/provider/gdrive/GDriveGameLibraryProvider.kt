@@ -34,7 +34,7 @@ import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
 
-class GDriveGameLibraryProvider(private val context: Context) : GameLibraryProvider {
+class GDriveGameLibraryProvider(componentBuilder: GDriveComponent.Builder) : GameLibraryProvider {
 
     companion object {
         private const val SPACE_APP_DATA = "appDataFolder"
@@ -42,10 +42,9 @@ class GDriveGameLibraryProvider(private val context: Context) : GameLibraryProvi
         val SCOPES = listOf(Scope(DriveScopes.DRIVE_READONLY), Scope(DriveScopes.DRIVE_APPDATA))
     }
 
-    val component = DaggerGDriveComponent.builder()
-            .context(context)
-            .build()
+    val component = componentBuilder.build()
 
+    @Inject lateinit var context: Context
     @Inject lateinit var driveBrowser: GDriveBrowser
 
     init {

@@ -32,8 +32,8 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Provider
 
-@Module
-abstract class GDriveModule {
+@Module(subcomponents = arrayOf(GDriveBrowseActivityComponent::class))
+internal abstract class GDriveModule {
     @Module
     companion object {
         @Provides

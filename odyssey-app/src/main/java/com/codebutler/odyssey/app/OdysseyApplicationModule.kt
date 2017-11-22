@@ -20,6 +20,7 @@
 package com.codebutler.odyssey.app
 
 import android.arch.persistence.room.Room
+import android.content.Context
 import com.codebutler.odyssey.lib.core.CoreManager
 import com.codebutler.odyssey.lib.library.GameLibrary
 import com.codebutler.odyssey.lib.library.db.OdysseyDatabase
@@ -27,8 +28,8 @@ import com.codebutler.odyssey.lib.library.provider.GameLibraryProvider
 import com.codebutler.odyssey.lib.library.provider.GameLibraryProviderRegistry
 import com.codebutler.odyssey.lib.library.provider.local.LocalGameLibraryProvider
 import com.codebutler.odyssey.lib.ovgdb.OvgdbManager
-import com.codebutler.odyssey.provider.gdrive.GDriveGameLibraryProvider
 import com.codebutler.odyssey.provider.webdav.WebDavLibraryProvider
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
@@ -46,6 +47,9 @@ import java.util.zip.ZipInputStream
 
 @Module
 abstract class OdysseyApplicationModule {
+
+    @Binds
+    abstract fun context(app: OdysseyApplication): Context
 
     @Module
     companion object {
@@ -73,11 +77,6 @@ abstract class OdysseyApplicationModule {
         @IntoSet
         @JvmStatic
         fun webDavGameLibraryProvider(app: OdysseyApplication): GameLibraryProvider = WebDavLibraryProvider(app)
-
-        @Provides
-        @IntoSet
-        @JvmStatic
-        fun gdriveLibraryProvider(app: OdysseyApplication): GameLibraryProvider = GDriveGameLibraryProvider(app)
 
         @Provides
         @JvmStatic
