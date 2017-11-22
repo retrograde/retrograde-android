@@ -40,8 +40,8 @@ class OdysseyApplication : Application(), HasActivityInjector {
                 System.setProperty("jna.dump_memory", "true")
             }
         }
-        fun get(context: Context) = context.applicationContext as OdysseyApplication
 
+        fun get(context: Context) = context.applicationContext as OdysseyApplication
     }
 
     lateinit var component: OdysseyApplicationComponent

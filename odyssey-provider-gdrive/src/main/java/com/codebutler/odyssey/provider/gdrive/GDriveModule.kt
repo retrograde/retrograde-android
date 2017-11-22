@@ -20,11 +20,8 @@
 package com.codebutler.odyssey.provider.gdrive
 
 import android.content.Context
-import com.gojuno.koptional.Optional
-import com.google.api.services.drive.Drive
 import dagger.Module
 import dagger.Provides
-import javax.inject.Provider
 
 @Module(subcomponents = arrayOf(GDriveBrowseActivityComponent::class))
 internal abstract class GDriveModule {
