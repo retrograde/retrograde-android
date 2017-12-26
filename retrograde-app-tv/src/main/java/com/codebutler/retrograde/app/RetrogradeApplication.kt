@@ -19,9 +19,15 @@
 
 package com.codebutler.retrograde.app
 
+import android.app.ActivityManager
 import android.content.Context
+import android.os.Process
 import com.codebutler.retrograde.BuildConfig
 import com.codebutler.retrograde.R
+import com.codebutler.retrograde.app.shared.logging.RetrogradeServiceTimberTree
+import com.codebutler.retrograde.app.shared.logging.RxTimberTree
+import com.codebutler.retrograde.common.kotlin.ignore
+import com.codebutler.retrograde.lib.logging.StdioUtil
 import com.codebutler.retrograde.storage.gdrive.GDriveStorageProvider
 import com.crashlytics.android.Crashlytics
 import com.f2prateek.rx.preferences2.RxSharedPreferences
@@ -44,38 +50,48 @@ class RetrogradeApplication : DaggerApplication() {
         fun get(context: Context) = context.applicationContext as RetrogradeApplication
     }
 
-    @Inject lateinit var rxTimberTree: RxTimberTree
-    @Inject lateinit var rxPrefs: RxSharedPreferences
     @Inject lateinit var gdriveStorageProvider: GDriveStorageProvider
+    @Inject lateinit var rxPrefs: RxSharedPreferences
+    @Inject lateinit var rxTimberTree: RxTimberTree
 
     override fun onCreate() {
         super.onCreate()
 
-        if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree())
-        } else {
+        if (!BuildConfig.DEBUG) {
             Fabric.with(this, Crashlytics())
         }
 
-        var isPlanted = false
-        rxPrefs.getBoolean(getString(R.string.pref_key_flags_logging)).asObservable()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { value ->
-                    gdriveStorageProvider.loggingEnabled = value
-                    if (value) {
-                        Timber.plant(rxTimberTree)
-                        isPlanted = true
-                    } else {
-                        if (isPlanted) {
-                            Timber.uproot(rxTimberTree)
-                            isPlanted = false
+        val loggingPref = rxPrefs.getBoolean(getString(R.string.pref_key_flags_logging))
+        if (isMainProcess) {
+            loggingPref.asObservable()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe { enabled ->
+                        gdriveStorageProvider.loggingEnabled = enabled
+                        if (enabled) {
+                            Timber.plant(Timber.DebugTree())
+                            Timber.plant(rxTimberTree)
+                        } else {
+                            Timber.uprootAll()
                         }
                     }
-                }
+                    .ignore()
+        } else {
+            if (loggingPref.get()) {
+                StdioUtil.redirectJavaStdio()
+                StdioUtil.redirectNativeStdio(this)
+                Timber.plant(RetrogradeServiceTimberTree(this))
+            }
+        }
     }
 
-    override fun applicationInjector(): AndroidInjector<out DaggerApplication> {
-        return DaggerRetrogradeApplicationComponent.builder()
-                .create(this)
-    }
+    override fun applicationInjector(): AndroidInjector<out DaggerApplication> =
+            DaggerRetrogradeApplicationComponent.builder()
+                    .create(this)
+
+    private val isMainProcess: Boolean
+        get() {
+            val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val myProcessName = activityManager.runningAppProcesses.find { it.pid == Process.myPid() }!!.processName
+            return myProcessName == applicationInfo.processName
+        }
 }

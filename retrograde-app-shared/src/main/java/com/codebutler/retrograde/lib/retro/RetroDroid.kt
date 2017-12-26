@@ -28,9 +28,7 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import com.codebutler.retrograde.common.BitmapCache
 import com.codebutler.retrograde.common.BufferCache
-import com.codebutler.retrograde.common.BuildConfig
 import com.codebutler.retrograde.common.kotlin.containsAny
-import com.codebutler.retrograde.lib.binding.LibRetrograde
 import com.codebutler.retrograde.lib.game.audio.GameAudio
 import com.codebutler.retrograde.lib.game.display.FpsCalculator
 import com.codebutler.retrograde.lib.game.display.GameDisplay
@@ -83,12 +81,6 @@ class RetroDroid(
         }
 
         System.setProperty("jna.library.path", coreFile.parentFile.absolutePath)
-
-        if (BuildConfig.DEBUG) {
-            val stdoutFile = File(context.filesDir, "stdout.log")
-            val stderrFile = File(context.filesDir, "stderr.log")
-            LibRetrograde.INSTANCE.retrograde_redirect_stdio(stdoutFile.path, stderrFile.path)
-        }
 
         val coreLibraryName = coreFile.nameWithoutExtension.substring(3) // FIXME
 

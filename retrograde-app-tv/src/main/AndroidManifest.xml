@@ -82,6 +82,11 @@
             android:name=".app.feature.settings.LicensesActivity"
             android:label="@string/licenses"/>
 
+        <service
+            android:name=".app.shared.logging.RetrogradeLogService"
+            android:process=":main"
+            android:exported="false"/>
+
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="83662f2d278441bb282ae75bb1372d250b1bdc04"/>

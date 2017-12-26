@@ -27,6 +27,7 @@ import com.codebutler.retrograde.app.feature.main.MainActivity
 import com.codebutler.retrograde.app.feature.settings.DebugLogActivity
 import com.codebutler.retrograde.app.feature.settings.LicensesActivity
 import com.codebutler.retrograde.app.feature.settings.SettingsActivity
+import com.codebutler.retrograde.app.shared.logging.RxTimberTree
 import com.codebutler.retrograde.lib.core.CoreManager
 import com.codebutler.retrograde.lib.injection.PerActivity
 import com.codebutler.retrograde.lib.injection.PerApp

@@ -1,4 +1,4 @@
-package com.codebutler.retrograde.app
+package com.codebutler.retrograde.app.shared.logging
 
 import com.jakewharton.rxrelay2.ReplayRelay
 import io.reactivex.Observable

@@ -473,8 +473,8 @@ class Retro(coreLibraryName: String) {
 
                         // Can't use our callback with libretro directly because
                         // JNA does not support variadic function callbacks.
-                        LibRetrograde.INSTANCE.retrograde_set_log_callback(logCb)
-                        val retrogradeLog = LibRetrograde.INSTANCE.retrograde_get_retro_log_printf()
+                        LibRetrograde.setLogCallback(logCb)
+                        val retrogradeLog = LibRetrograde.getRetroLogPrintf()
 
                         val logCallback = LibRetro.retro_log_callback(data)
                         logCallback.log = retrogradeLog
