@@ -31,6 +31,7 @@ object deps {
         val autoDisposeAndroidArchKotlin    = "com.uber.autodispose:autodispose-android-archcomponents-kotlin:${versions.autoDispose}"
         val autoDisposeAndroidKotlin        = "com.uber.autodispose:autodispose-android-kotlin:${versions.autoDispose}"
         val autoDisposeKotlin               = "com.uber.autodispose:autodispose-kotlin:${versions.autoDispose}"
+        val crashlytics                     = "com.crashlytics.sdk.android:crashlytics:2.8.0@aar"
         val dagger                          = "com.google.dagger:dagger:${versions.dagger}"
         val daggerAndroid                   = "com.google.dagger:dagger-android:${versions.dagger}"
         val daggerAndroidProcessor          = "com.google.dagger:dagger-android-processor:${versions.dagger}"

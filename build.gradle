@@ -74,6 +74,10 @@ subprojects {
             }
         }
     }
+
+    configurations.all {
+        exclude group: "com.google.code.findbugs", module: "jsr305"
+    }
 }
 
 configurations {
