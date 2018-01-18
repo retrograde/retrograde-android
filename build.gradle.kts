@@ -27,6 +27,7 @@ buildscript {
 
 plugins {
     id("com.github.ben-manes.versions") version "0.17.0"
+    checkstyle
 }
 
 allprojects {
@@ -43,10 +44,19 @@ subprojects {
         plugin("checkstyle")
     }
 
+    tasks {
+        val checkstyle by creating(Checkstyle::class) {
+            configFile = file("$rootDir/config/checkstyle/checkstyle.xml")
+            classpath = files()
+            source("src")
+        }
+
+        tasks.findByName("check")?.dependsOn(checkstyle)
+    }
+
     extensions.configure(CheckstyleExtension::class.java) {
-        configFile = file("config/checkstyle/checkstyle.xml")
         isIgnoreFailures = false
-        toolVersion = "6.17"
+        toolVersion = "8.7"
     }
 
     afterEvaluate {
@@ -90,7 +100,7 @@ configurations {
 }
 
 dependencies {
-    "ktlint"("com.github.shyiko:ktlint:0.14.0")
+    "ktlint"("com.github.shyiko:ktlint:0.15.0")
 }
 
 tasks {
