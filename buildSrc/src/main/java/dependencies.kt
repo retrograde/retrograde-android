@@ -69,4 +69,10 @@ object deps {
         const val supportRecyclerViewV7         = "com.android.support:recyclerview-v7:${versions.support}"
         const val timber                        = "com.jakewharton.timber:timber:4.6.0"
     }
+
+    object plugins {
+        const val android   = "com.android.tools.build:gradle:3.0.1"
+        const val fabric    = "io.fabric.tools:gradle:1.25.1"
+        const val kotlin    = "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
+    }
 }
