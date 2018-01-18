@@ -16,5 +16,3 @@ dependencies {
     implementation(deps.libs.supportAppCompatV7)
     implementation(deps.libs.supportRecyclerViewV7)
 }
-
-android { }
