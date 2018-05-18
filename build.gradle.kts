@@ -43,7 +43,14 @@ allprojects {
                     }
                 }
                 "com.google.android.gms" -> useVersion(deps.versions.gms)
-                "org.jetbrains.kotlin" -> useVersion(deps.versions.kotlin)
+                "org.jetbrains.kotlin" -> {
+                    if (requested.name.startsWith("kotlin-stdlib-jre")) {
+                        with(requested) {
+                            useTarget("$group:${name.replace("jre", "jdk")}:$version")
+                        }
+                    }
+                    useVersion(deps.versions.kotlin)
+                }
             }
         }
     }
@@ -115,7 +122,7 @@ configurations {
 }
 
 dependencies {
-    "ktlint"("com.github.shyiko:ktlint:0.20.0")
+    "ktlint"(deps.libs.ktlint)
 }
 
 tasks {
@@ -125,6 +132,8 @@ tasks {
     "lintKotlin"(JavaExec::class) {
         main = "com.github.shyiko.ktlint.Main"
         classpath = configurations["ktlint"]
-        args.addAll(listOf("*/src/**/*.kt"))
+        args?.addAll(listOf("*/src/**/*.kt"))
     }
+
+    findByName("check")?.dependsOn("lintKotlin")
 }
