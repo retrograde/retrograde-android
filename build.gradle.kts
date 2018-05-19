@@ -90,6 +90,8 @@ subprojects {
                 isAbortOnError = true
                 disable("UnusedResources") // https://issuetracker.google.com/issues/63150366
                 disable("InvalidPackage")
+                disable("VectorPath")
+                disable("TrustAllX509TrustManager")
             }
             dexOptions {
                 dexInProcess = true
