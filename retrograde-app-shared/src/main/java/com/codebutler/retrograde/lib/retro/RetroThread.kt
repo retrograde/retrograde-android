@@ -1,13 +1,14 @@
 package com.codebutler.retrograde.lib.retro
 
-import java.util.*
+import java.util.LinkedList
 import kotlin.math.roundToLong
 import kotlin.system.measureNanoTime
 
 /** Handle periodic actions with improved accuracy. Core ideas taken from:
  *  https://github.com/LWJGL/lwjgl/blob/master/src/java/org/lwjgl/opengl/Sync.java */
 
-class RetroThread(private val cyclePeriod: Long, private val runnable: () -> Unit): Thread() {
+class RetroThread(private val cyclePeriod: Long, private val runnable: () -> Unit) : Thread() {
+
     companion object {
         const val NANOS_IN_SECOND = 1_000_000_000L
         const val SLEEP_SECURITY_THRESHOLD = 1_000_000 // We overestimate this value to make sure we are not sleeping too much
@@ -29,7 +30,7 @@ class RetroThread(private val cyclePeriod: Long, private val runnable: () -> Uni
     override fun run() {
         var startTime: Long
 
-        while(true) {
+        while (true) {
             startTime = System.nanoTime()
             runnable()
             accurateSleep(startTime + cyclePeriod)
