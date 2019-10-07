@@ -10,8 +10,11 @@ import kotlin.system.measureNanoTime
 class RetroThread(private val cyclePeriod: Long, private val runnable: () -> Unit) : Thread() {
 
     companion object {
+        // We overestimate this value to make sure we are not sleeping too much
+        const val SLEEP_SECURITY_THRESHOLD = 1_000_000
+
         const val NANOS_IN_SECOND = 1_000_000_000L
-        const val SLEEP_SECURITY_THRESHOLD = 1_000_000 // We overestimate this value to make sure we are not sleeping too much
+
         const val MOVING_AVERAGE_SIZE = 10
 
         fun fromFPS(fps: Double, runnable: () -> Unit): RetroThread {
@@ -30,10 +33,12 @@ class RetroThread(private val cyclePeriod: Long, private val runnable: () -> Uni
     override fun run() {
         var startTime: Long
 
-        while (true) {
-            startTime = System.nanoTime()
-            runnable()
-            accurateSleep(startTime + cyclePeriod)
+        kotlin.runCatching {
+            while (true) {
+                startTime = System.nanoTime()
+                runnable()
+                accurateSleep(startTime + cyclePeriod)
+            }
         }
     }
 
